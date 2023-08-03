@@ -1,0 +1,12 @@
+import { IncomingMessage, ServerResponse } from "node:http";
+import { IMiddlewareFunction } from "../interfaces";
+
+export const {{name}}Middleware: IMiddlewareFunction = function (
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: Function
+) {
+  // Write your middleware here...
+  
+  next();
+};

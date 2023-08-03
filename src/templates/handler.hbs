@@ -1,0 +1,15 @@
+import { IncomingMessage, ServerResponse } from "node:http";
+import { createHandler } from "../handler"
+/**
+ * This is a generated handler for "/api/{{name}}" in your API and
+ * its different subroutes, you can create more handlers for
+ * more routes by creating JavaScript files under the handlers
+ * folder and following the structure on this file.
+ */
+export const {{name}}Handler = createHandler("/api/{{name}}");
+
+{{#each methods}}
+{{../name}}Handler.{{this}}("/", async (request: IncomingMessage, response: ServerResponse) => {
+  response.json({params: request.params, query: request.query, roles: request.roles});
+});
+{{/each}}

@@ -1,0 +1,53 @@
+import { IRepository } from "../interfaces";
+{{#if (eq database "mysql")}}
+import { MySQL } from "../database";
+{{else}}
+import { MongoDB } from "../database";
+{{/if}}
+
+export const {{name}}Repository: IRepository = {
+{{#if (eq database "mysql")}}
+  create: async function({{name}}) {
+    const [result] = await MySQL.query("INSERT INTO {{name}}s SET ?", user);
+    return result.insertId;
+  },
+  findById: async function(id) {
+    const [rows, fields] = await MySQL.query("SELECT * FROM {{name}}s WHERE id=?", [id]);
+    return rows[0];
+  },
+  findAll: async function () {
+    const [rows, fields] = await MySQL.query("SELECT * FROM {{name}}s");
+    return rows;
+  },
+  update: async function(id, {{name}}) {
+    const [result] = await MySQL.query("UPDATE {{name}}s SET ? WHERE id=?", [user, id]);
+    return result.affectedRows > 0;
+  },
+  delete: async function(id) {
+    const [result] = await MySQL.query("DELETE FROM {{name}}s WHERE id=?", [id]);
+    return result.affectedRows > 0;
+  },
+{{else}}
+  create: async function(user) {
+    const result = await MongoDB.insertOne(user);
+    return result.insertedId;
+  },
+  findById: async function(id) {
+    const result = await MongoDB.findOne({ _id: id });
+    return result;
+  },
+  findAll: async function () {
+    const result = await MongoDB.find({}).toArray();
+    return result;
+  },
+  update: async function(id, user) {
+    const result = await MongoDB.updateOne({ _id: id }, { $set: user });
+    return result.modifiedCount > 0;
+  },
+  delete: async function(id) {
+    const result = await MongoDB.deleteOne({ _id: id });
+    return result.deletedCount > 0;
+  },
+{{/if}}
+};
+
