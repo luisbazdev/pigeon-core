@@ -1,8 +1,17 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 module.exports = function (plop) {
+  const env = process.env.ENVIRONMENT;
+  const handlerDir =
+    env === "dev" ? "src/handler/{{name}}.ts" : "../../src/handler/{{name}}.ts";
+  const middlewareDir =
+    env === "dev" ? "src/middleware/{{name}}Middleware.ts" : "../../src/middleware/{{name}}Middleware.ts";
+  const repositoryDir =
+    env === "dev" ? "src/repository/{{name}}Repository.ts" : "../../src/repository/{{name}}Repository.ts";
   plop.setHelper("eq", function (a, b) {
     return a === b;
   });
-
   plop.setGenerator("handler", {
     description: "Generate a new handler file",
     prompts: [
@@ -26,11 +35,12 @@ module.exports = function (plop) {
     actions: [
       {
         type: "add",
-        path: "src/handler/{{name}}.ts",
+        path: handlerDir,
         templateFile: "src/templates/handler.hbs",
         data: {
           name: "{{name}}",
           route: "{{route}}",
+          env
         },
       },
     ],
@@ -48,8 +58,11 @@ module.exports = function (plop) {
     actions: [
       {
         type: "add",
-        path: "src/middleware/{{name}}Middleware.ts",
+        path: middlewareDir,
         templateFile: "src/templates/middleware.hbs",
+        data: {
+          env
+        }
       },
     ],
   });
@@ -75,9 +88,12 @@ module.exports = function (plop) {
     actions: [
       {
         type: "add",
-        path: "src/repository/{{name}}Repository.ts",
+        path: repositoryDir,
         templateFile: "src/templates/repository.hbs",
+        data: {
+          env
+        }
       },
     ],
   });
-}
+};

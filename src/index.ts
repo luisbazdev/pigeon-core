@@ -24,10 +24,10 @@ import { createAuthRoutes } from "./util";
   Pigeon.addMiddleware(bodyMiddleware);
   Pigeon.addMiddleware(cookiesMiddleware);
 
-  if (env.AUTHENTICATION_USE != "None") Pigeon.addMiddleware(authenticate());
-  else if (
-    env.AUTHENTICATION_JWT_ROUTES_ENABLED &&
-    env.AUTHENTICATION_USE == "JWT"
+  if (env.AUTHENTICATION_USE !== "None") Pigeon.addMiddleware(authenticate());
+  if (
+    env.AUTHENTICATION_USE === "JWT" &&
+    env.AUTHENTICATION_JWT_ROUTES_ENABLED
   )
     Pigeon.addHandler(createAuthRoutes());
 

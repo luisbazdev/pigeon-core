@@ -1,15 +1,18 @@
 import { IncomingMessage, ServerResponse } from "node:http";
+{{#if (eq env "dev")}}
 import { createHandler } from "../handler"
+{{else}}
+import { createHandler } from "pigeon-core"
+{{/if}}
 /**
- * This is a generated handler for "/api/{{name}}" in your API and
- * its different subroutes, you can create more handlers for
- * more routes by creating JavaScript files under the handlers
- * folder and following the structure on this file.
+ * This is a generated handler for "/api/{{name}}s" route,
+ * all request to such will be handled by the handler below.
  */
-export const {{name}}Handler = createHandler("/api/{{name}}");
+export const {{name}}Handler = createHandler("/{{name}}s");
 
 {{#each methods}}
 {{../name}}Handler.{{this}}("/", async (request: IncomingMessage, response: ServerResponse) => {
-  response.json({params: request.params, query: request.query, roles: request.roles});
+  // ...
+  response.end()
 });
 {{/each}}

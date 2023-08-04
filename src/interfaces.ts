@@ -60,3 +60,38 @@ export interface IRepository {
   update?: (id: any, obj: any) => any;
   delete?: (id: any, obj: any) => any;
 }
+export interface ISettings {
+  AUTHENTICATION: {
+    use: string;
+    basic: {
+      user: string;
+      password: string;
+    };
+    jwt: {
+      privateKey: string;
+      routes: {
+        enabled: boolean;
+        path: string;
+        login: string;
+        register: string;
+        logout: string;
+      };
+    };
+  };
+  DATABASE: {
+    mysql: {
+      enabled: boolean;
+      host: string;
+      user: string;
+      password: string;
+      database: string;
+    };
+    mongodb: {
+      enabled: boolean;
+      url: string;
+      db: string;
+      collection: string;
+    };
+  };
+  PORT: string;
+}
