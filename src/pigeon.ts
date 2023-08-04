@@ -52,25 +52,27 @@ export let Pigeon: IPigeon = {
     const urlObject = URL.parse(url, true);
     const { pathname, query } = urlObject;
     const pathSegments = pathname.split("/");
-    // Get the first path segment
-    let firstSegment = "/" + pathSegments[1];
-    if(firstSegment !== "/api") return res.status(404).send("Route Not Found...");
-    firstSegment += `/${pathSegments[2]}`
-    const handler = Pigeon.handlers.find((handler) => {
+    const firstSegment = pathSegments[1];
+    const secondSegment = "/api/" + pathSegments[2];
+    if (firstSegment !== "api")
+      return res.status(404).send("Route Not Found...");
+
+    const handler = Pigeon?.handlers?.find((handler) => {
       const regex = new RegExp(`^${handler.path.replace(/:\w+/g, "([^/]+)")}$`);
-      const match = firstSegment.match(regex);
+      const match = secondSegment.match(regex);
       return match ? true : false;
     });
+
     const foundRoute = handler?.routes?.find((route: any) => {
       const regex = new RegExp(`^${route.route.replace(/:\w+/g, "([^/]+)")}$`);
       const match =
-        pathname.substring(firstSegment.length).match(regex) &&
+        url.substring(secondSegment.length).match(regex) &&
         route.method === method;
       if (match) {
         req.query = query;
         req.params = getParams(
-          firstSegment + route.route,
-          pathname.substring(firstSegment.length).match(regex)
+          secondSegment + route.route,
+          pathname.substring(secondSegment.length).match(regex)
         );
       }
       return match;
@@ -87,6 +89,7 @@ export let Pigeon: IPigeon = {
     await Pigeon.run(appMiddlewares, req, res);
   },
   addHandler: function (_handler: IHandler) {
+    // Search handlers with custom params functionality using regex here...
     const handlerExists = this.handlers?.find(
       (handler) => handler.path === "/api" + _handler.path
     );
@@ -99,10 +102,10 @@ export let Pigeon: IPigeon = {
     _repository.name = name;
     this.repositories.push(_repository);
   },
-  addMiddleware: function(_middleware: IMiddlewareFunction){
-    this.middlewares.push(_middleware)
+  addMiddleware: function (_middleware: IMiddlewareFunction) {
+    this.middlewares.push(_middleware);
   },
-  addSettings: function(_settings: any){
+  addSettings: function (_settings: any) {
     this.settings = _settings;
-  }
+  },
 };

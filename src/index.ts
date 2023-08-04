@@ -10,8 +10,6 @@ import { bodyMiddleware, cookiesMiddleware } from "./middleware/built";
 import { authenticate } from "./auth";
 import { createAuthRoutes } from "./util";
 
-/* when building, make npx tsc remove build folder first */
-
 (async function () {
   const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
   if (env === "prod") {

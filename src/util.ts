@@ -7,7 +7,7 @@ import {
 import { Pigeon } from "./pigeon";
 import { IncomingMessage, ServerResponse } from "node:http";
 
-const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings
+const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
 
 export const removeSlash = function (path: string) {
   if (path.endsWith("/") && path !== "/") path = path.slice(0, -1);
@@ -15,8 +15,13 @@ export const removeSlash = function (path: string) {
 };
 
 export const createAuthRoutes = function () {
-  if(!env.DATABASE_MYSQL_HOST || !env.DATABASE_MYSQL_USER || !env.DATABASE_MYSQL_PASSWORD || !env.DATABASE_MYSQL_DATABASE){
-    throw new Error("Set up your MySQL database settings correctly!")
+  if (
+    !env.DATABASE_MYSQL_HOST ||
+    !env.DATABASE_MYSQL_USER ||
+    !env.DATABASE_MYSQL_PASSWORD ||
+    !env.DATABASE_MYSQL_DATABASE
+  ) {
+    throw new Error("Set up your MySQL database settings correctly!");
   }
   return {
     path: env.AUTHENTICATION_JWT_ROUTES_PATH,
@@ -125,4 +130,34 @@ export const getParams = function (route: string, match: any) {
     {}
   );
   return paramsObj;
+};
+
+const onlyAllowedCharacters = /^(?!.*\/\/)[\/a-zA-Z0-9:=~-]+$/;
+const containsWhitespaces = /\s/;
+
+const isCharacterRepeated = function (string: string, character: string) {
+  var occurrences = string.split(character).length - 1;
+  return occurrences > 1;
+};
+
+export const isHandlerPathValid = function (handlerPath: string) {
+  return (
+    onlyAllowedCharacters.test(handlerPath) &&
+    handlerPath != "/api" &&
+    handlerPath != "/" &&
+    handlerPath &&
+    !containsWhitespaces.test(handlerPath) &&
+    handlerPath.startsWith("/") &&
+    !handlerPath.endsWith("/") &&
+    !isCharacterRepeated(handlerPath, "/")
+  );
+};
+
+export const isHandlerRoutePathValid = function (handlerRoutePath: string) {
+  return (
+    onlyAllowedCharacters.test(handlerRoutePath) &&
+    !containsWhitespaces.test(handlerRoutePath) &&
+    handlerRoutePath.startsWith("/") &&
+    !handlerRoutePath.endsWith("/")
+  );
 };

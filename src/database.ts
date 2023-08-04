@@ -2,21 +2,20 @@ const mysql = require("mysql2/promise");
 const { MongoClient } = require("mongodb");
 import { Pigeon } from "./pigeon";
 
-const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings
+const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
 
 let MySQL: any;
 let MongoDB: any;
 
 export const database = async function () {
   // initialize all databases that are enabled
-  if (env.DATABASE_MYSQL_ENABLED === true)
-    MySQL = await MySQLConnection();
+  if (env.DATABASE_MYSQL_ENABLED === true) MySQL = await MySQLConnection();
   if (env.DATABASE_MONGODB_ENABLED === true)
     MongoDB = await MongoDBConnection();
 };
 
 export const MySQLConnection = async function () {
-  if (env.DATABASE_MYSQL_ENABLED !== true) return
+  if (env.DATABASE_MYSQL_ENABLED !== true) return;
   if (MySQL) {
     return MySQL;
   }
@@ -31,7 +30,7 @@ export const MySQLConnection = async function () {
 };
 
 export const MongoDBConnection = async function () {
-  if (env.DATABASE_MONGODB_ENABLED !== true) return
+  if (env.DATABASE_MONGODB_ENABLED !== true) return;
   if (MongoDB) {
     return MongoDB;
   }

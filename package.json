@@ -4,14 +4,14 @@
   "description": "",
   "main": "build/src/index.js",
   "scripts": {
-    "build": "npx tsc",
+    "build": "rimraf build && npx tsc",
     "prestart": "npm run build",
     "start": "node build/src/index.js",
     "create": "plop",
     "create-middleware": "plop middleware",
     "create-handler": "plop handler",
     "create-repository": "plop repository",
-    "test": "jest"
+    "test": "npm run build && jest"
   },
   "keywords": [],
   "author": "Luis Barraza (luisbazdev)",
@@ -26,6 +26,7 @@
   "devDependencies": {
     "jest": "^29.6.2",
     "plop": "^3.1.2",
+    "rimraf": "^5.0.1",
     "typescript": "^5.1.6"
   },
   "watchOptions": {
