@@ -21,12 +21,9 @@ export const createHandler: any = function (path: string, middleware?: any[]) {
       handler.createEndpoint(path, func, "DELETE", middleware);
     },
     createEndpoint: (path, func, method, middleware?: any[]) => {
-      // /users/:userId
-      // /users/:id
-      if (!isHandlerRoutePathValid(path))
+      if (!isHandlerRoutePathValid(path) && path !== "/")
         throw new Error("Handler route path is invalid!");
       if (path === "/") path = "";
-      // Search routes with custom params functionality using regex here...
       const rootExists = handler.routes?.find(
         (route) => route.route === path && route.method === method
       );

@@ -132,7 +132,8 @@ export const getParams = function (route: string, match: any) {
   return paramsObj;
 };
 
-const onlyAllowedCharacters = /^(?!.*\/\/)[\/a-zA-Z0-9:=~-]+$/;
+const onlyAllowedHandlerCharacters = /^(?!.*\/\/)[\/a-zA-Z0-9=~\-]+$/;
+const onlyAllowedRouteCharacters = /^(?!.*\/\/)[\/a-zA-Z0-9:=~-]+$/;
 const containsWhitespaces = /\s/;
 
 const isCharacterRepeated = function (string: string, character: string) {
@@ -142,7 +143,7 @@ const isCharacterRepeated = function (string: string, character: string) {
 
 export const isHandlerPathValid = function (handlerPath: string) {
   return (
-    onlyAllowedCharacters.test(handlerPath) &&
+    onlyAllowedHandlerCharacters.test(handlerPath) &&
     handlerPath != "/api" &&
     handlerPath != "/" &&
     handlerPath &&
@@ -155,7 +156,7 @@ export const isHandlerPathValid = function (handlerPath: string) {
 
 export const isHandlerRoutePathValid = function (handlerRoutePath: string) {
   return (
-    onlyAllowedCharacters.test(handlerRoutePath) &&
+    onlyAllowedRouteCharacters.test(handlerRoutePath) &&
     !containsWhitespaces.test(handlerRoutePath) &&
     handlerRoutePath.startsWith("/") &&
     !handlerRoutePath.endsWith("/")

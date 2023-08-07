@@ -56,7 +56,7 @@ export let Pigeon: IPigeon = {
     const secondSegment = "/api/" + pathSegments[2];
     if (firstSegment !== "api")
       return res.status(404).send("Route Not Found...");
-
+    
     const handler = Pigeon?.handlers?.find((handler) => {
       const regex = new RegExp(`^${handler.path.replace(/:\w+/g, "([^/]+)")}$`);
       const match = secondSegment.match(regex);
@@ -89,7 +89,6 @@ export let Pigeon: IPigeon = {
     await Pigeon.run(appMiddlewares, req, res);
   },
   addHandler: function (_handler: IHandler) {
-    // Search handlers with custom params functionality using regex here...
     const handlerExists = this.handlers?.find(
       (handler) => handler.path === "/api" + _handler.path
     );
