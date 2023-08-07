@@ -71,7 +71,6 @@ export interface ISettings {
       privateKey: string;
       routes: {
         enabled: boolean;
-        path: string;
         login: string;
         register: string;
         logout: string;

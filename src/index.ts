@@ -27,7 +27,7 @@ import { createAuthRoutes } from "./util";
   if (env.AUTHENTICATION_USE !== "None") Pigeon.addMiddleware(authenticate());
   if (
     env.AUTHENTICATION_USE === "JWT" &&
-    env.AUTHENTICATION_JWT_ROUTES_ENABLED
+    env.AUTHENTICATION_JWT_ROUTES_ENABLED === "true"
   )
     Pigeon.addHandler(createAuthRoutes());
 
@@ -58,7 +58,7 @@ import { createAuthRoutes } from "./util";
       }
     });
   }
-
+  
   Pigeon.listen(env.PORT, () => {
     console.log(`Pigeon is listening on port ${env.PORT}`);
   });

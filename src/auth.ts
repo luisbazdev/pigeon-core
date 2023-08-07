@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 import { IncomingMessage, ServerResponse } from "node:http";
-import { MySQLConnection } from "./database";
+import { MySQL } from "./database";
 import { Pigeon } from "./pigeon";
 import {
   IHandlerFuction,
@@ -12,8 +12,6 @@ import {
 } from "./interfaces";
 
 const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
-
-const connection = MySQLConnection();
 
 export const authenticate: any = function () {
   if (env.AUTHENTICATION_USE == "None") return;
@@ -69,14 +67,9 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
 ) {
   const { url } = req;
   if (
-    url ==
-      env.AUTHENTICATION_JWT_ROUTES_PATH +
-        env.AUTHENTICATION_JWT_ROUTES_LOGIN ||
-    url ==
-      env.AUTHENTICATION_JWT_ROUTES_PATH +
-        env.AUTHENTICATION_JWT_ROUTES_REGISTER ||
-    url ==
-      env.AUTHENTICATION_JWT_ROUTES_PATH + env.AUTHENTICATION_JWT_ROUTES_LOGOUT
+    url == "/api/auth" + env.AUTHENTICATION_JWT_ROUTES_LOGIN ||
+    url == "/api/auth" + env.AUTHENTICATION_JWT_ROUTES_REGISTER ||
+    url == "/api/auth" + env.AUTHENTICATION_JWT_ROUTES_LOGOUT
   )
     return next();
   if (!req.get("authorization")) {
@@ -104,32 +97,30 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
   res: any
 ) {
   const { email, password } = req.body;
-  connection.then(async (conn) => {
-    // find user
-    const [rows, fields] = await conn.query(
-      `SELECT * FROM users WHERE email = '${email}'`
-    );
-    if (rows.length > 0) {
-      const match = await bcrypt.compare(password, rows[0].password);
-      if (match) {
-        const { id } = rows[0];
-        const [result, _] = await conn.query(
-          `SELECT * FROM user_roles WHERE user_id = ${id};`
-        );
-        const roles = result.map((obj: any) => obj.role);
-        const token = await JWTSignToken({
-          name: rows[0].name,
-          email,
-          roles,
-        });
-        res.json({ token });
-      } else {
-        res.send("Wrong password");
-      }
+  // find user
+  const [rows, fields] = await MySQL.query(
+    `SELECT * FROM users WHERE email = '${email}'`
+  );
+  if (rows.length > 0) {
+    const match = await bcrypt.compare(password, rows[0].password);
+    if (match) {
+      const { id } = rows[0];
+      const [result, _] = await MySQL.query(
+        `SELECT * FROM user_roles WHERE user_id = ${id};`
+      );
+      const roles = result.map((obj: any) => obj.role);
+      const token = await JWTSignToken({
+        name: rows[0].name,
+        email,
+        roles,
+      });
+      res.json({ token });
     } else {
-      res.send("User does not exist");
+      res.send("Wrong password");
     }
-  });
+  } else {
+    res.send("User does not exist");
+  }
 };
 export const JWTAuthenticationSignUp: IHandlerFuction = async function (
   req: any,
@@ -137,24 +128,22 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
 ) {
   const { name, email, password } = req.body;
   const hashedPassword = await bcryptHashPassword(password);
-  connection.then(async (conn) => {
-    const [users, usersFields] = await conn.query(
-      `SELECT * FROM users WHERE email = '${email}'`
+  const [users, usersFields] = await MySQL.query(
+    `SELECT * FROM users WHERE email = '${email}'`
+  );
+  if (users.length > 0) {
+    res.status(500).send("User already exists!");
+  } else {
+    const query = await MySQL.query(
+      `INSERT INTO users (name, email, password) VALUES ('${name}', '${email}', '${hashedPassword}')`
     );
-    if (users.length > 0) {
-      res.status(500).send("User already exists!");
-    } else {
-      const query = await conn.query(
-        `INSERT INTO users (name, email, password) VALUES ('${name}', '${email}', '${hashedPassword}')`
-      );
-      const { insertId } = query[0];
-      // create roles here in database
-      await conn.query(
-        `INSERT INTO user_roles (user_id, role) VALUES (${insertId}, 'user');`
-      );
-      res.send("User created successfully!");
-    }
-  });
+    const { insertId } = query[0];
+    // create roles here in database
+    await MySQL.query(
+      `INSERT INTO user_roles (user_id, role) VALUES (${insertId}, 'user');`
+    );
+    res.send("User created successfully!");
+  }
 };
 export const JWTAuthenticationLogOut: IHandlerFuction = function (
   req: any,

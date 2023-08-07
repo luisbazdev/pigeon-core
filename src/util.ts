@@ -24,7 +24,7 @@ export const createAuthRoutes = function () {
     throw new Error("Set up your MySQL database settings correctly!");
   }
   return {
-    path: env.AUTHENTICATION_JWT_ROUTES_PATH,
+    path: "/api/auth",
     routes: [
       {
         route: env.AUTHENTICATION_JWT_ROUTES_LOGIN,
