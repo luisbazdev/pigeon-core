@@ -147,6 +147,7 @@ const isCharacterRepeated = function (string: string, character: string) {
 
 export const isHandlerPathValid = function (handlerPath: string) {
   return (
+    handlerPath != "/auth" && 
     onlyAllowedHandlerCharacters.test(handlerPath) &&
     handlerPath != "/api" &&
     handlerPath != "/" &&
