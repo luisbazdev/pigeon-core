@@ -24,6 +24,7 @@ export const MySQLConnection = async function () {
     user: env.DATABASE_MYSQL_USER,
     password: env.DATABASE_MYSQL_PASSWORD,
     database: env.DATABASE_MYSQL_DATABASE,
+    port: env.DATABASE_MYSQL_PORT ?? "3306",
   });
   MySQL = conn;
   return MySQL;
