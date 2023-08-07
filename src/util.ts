@@ -6,6 +6,7 @@ import {
 
 import { Pigeon } from "./pigeon";
 import { IncomingMessage, ServerResponse } from "node:http";
+import { readFile } from "node:fs";
 
 const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
 
@@ -51,39 +52,39 @@ export const createAuthRoutes = function () {
 
 export const init = function (req: any, res: any) {
   req.get = function (header: string) {
-    // if header contains a "-", remove it
     return this.headers[header];
   };
-  // also add methods for req (and some more for res)
-  res.download = function (_path: string) {
-    // Set the Content-Disposition header to force a download with the specified filename
-    const filename = "example.mp4";
-    res.setHeader("Content-Disposition", "attachment; filename=" + filename);
-    /*fs.readFile(__dirname + _path, (error: any, data: any) => {
-      if (error) throw error;
-      this.end(data);
-    });*/
+  res.download = function (filePath: string) {
+    this.set("Content-Disposition", "attachment; filename=" + filePath);
+    readFile(
+      `${__dirname}../../../static/${filePath}`,
+      (error: any, data: any) => {
+        if (error) throw error;
+        this.end();
+      }
+    );
   };
   res.redirect = function (to: string) {
-    res.writeHead(302, { Location: to });
-    res.end();
+    this.writeHead(302, { Location: to }).end();
   };
   res.set = function (header: string, value: string) {
     this.setHeader(header, value);
     return this;
   };
-  res.send = function (val: any) {
-    if (typeof val == "object") return this.json(val);
+  res.send = function (value: any) {
+    if (typeof value == "object") return this.json(value);
     this.setHeader("Content-Type", "text/html");
-    return this.end(val);
+    return this.end(value);
   };
-  res.sendFile = function (_path: string) {
-    // change the header depending on the extension of the file (path.extname(_path))
-    /*this.setHeader("Content-Type", "text/css");
-    fs.readFile(__dirname + _path, (error: Error, data: any) => {
-      if (error) throw error;
-      this.end(data);
-    });*/
+  res.sendFile = function (filePath: string) {
+    readFile(
+      `${__dirname}../../../static/${filePath}`,
+      (error: any, data: any) => {
+        if (error) throw error;
+        this.setHeader("Content-Type", getContentType(filePath));
+        return this.end(data);
+      }
+    );
   };
   res.json = function (val: any) {
     this.setHeader("Content-Type", "application/json");
@@ -94,24 +95,27 @@ export const init = function (req: any, res: any) {
     return this;
   };
   res.cookie = function (name: string, value: string, options: any) {
-    let { domain, expires, httpOnly, maxAge, path, secure, signed, sameSite } =
-      options;
+    const cookieOptions: any = {
+      Domain: options.domain,
+      Expires: options.expires,
+      HttpOnly: options.httpOnly,
+      "Max-Age": options.maxAge,
+      Path: options.path,
+      Secure: options.secure,
+      Signed: options.signed,
+      SameSite: options.sameSite,
+    };
 
     let cookieString = `${name}=${value};`;
-    if (domain) cookieString += ` Domain=${domain};`;
-    if (expires) cookieString += ` Expires=${expires};`;
-    if (httpOnly) cookieString += ` HttpOnly;`;
-    if (maxAge) cookieString += ` Max-Age=${maxAge};`;
-    if (path) cookieString += ` Path=${path};`;
-    if (secure) cookieString += ` Secure;`;
-    if (signed) cookieString += ` Signed;`;
-    if (sameSite) cookieString += ` SameSite=${sameSite};`;
+
+    for (const option in cookieOptions) {
+      if (cookieOptions[option]) {
+        cookieString += ` ${option}=${cookieOptions[option]};`;
+      }
+    }
+
     this.setHeader("Set-Cookie", cookieString);
 
-    return this;
-  };
-  res.set = function (field: string, value: string) {
-    this.setHeader(field, value);
     return this;
   };
 };
@@ -161,4 +165,51 @@ export const isHandlerRoutePathValid = function (handlerRoutePath: string) {
     handlerRoutePath.startsWith("/") &&
     !handlerRoutePath.endsWith("/")
   );
+};
+
+const getContentType = function (path: string) {
+  const extension = path.split(".")[1];
+  switch (extension) {
+    case "mp3": {
+      return "audio/mpeg";
+    }
+    case "wav": {
+      return "audio/wav";
+    }
+    case "ogg": {
+      return "audio/ogg";
+    }
+    case "mp4": {
+      return "video/mp4";
+    }
+    case "ogg": {
+      return "video/ogg";
+    }
+    case "avi": {
+      return "video/x-msvideo";
+    }
+    case "mpeg": {
+      return "video/mpeg";
+    }
+    case "jpg": {
+      return "image/jpg";
+    }
+    case "png": {
+      return "image/png";
+    }
+    case "gif": {
+      return "image/gif";
+    }
+    case "js": {
+      return "text/javascript";
+    }
+    case "css": {
+      return "text/css";
+    }
+    case "html": {
+      return "text/html";
+    }
+    default:
+      return "text/html";
+  }
 };
