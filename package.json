@@ -5,7 +5,8 @@
   "main": "build/src/index.js",
   "scripts": {
     "build": "rimraf build && npx tsc",
-    "prestart": "npm run build",
+    "migrate" : "npx migrate up",
+    "prestart": "npm run migrate && npm run build",
     "start": "node build/src/index.js",
     "create": "plop",
     "create-middleware": "plop middleware",
@@ -21,7 +22,8 @@
     "dotenv": "^16.3.1",
     "jsonwebtoken": "^9.0.1",
     "mongodb": "^5.7.0",
-    "mysql2": "^3.5.2"
+    "mysql2": "^3.5.2",
+    "node-migrate": "^0.1.0"
   },
   "devDependencies": {
     "jest": "^29.6.2",
