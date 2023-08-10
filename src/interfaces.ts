@@ -97,7 +97,7 @@ export interface ISettings {
   };
   port: string;
 }
-export type AuthType = "None" | "JWT" | "Basic";
+export type AuthType = "none" | "jwt" | "basic";
 export interface JWTSettings {
   privateKey: string;
   routes?: {
@@ -112,7 +112,7 @@ export interface HTTPBasicSettings {
   user: string;
   password: string;
 }
-export type DBType = "MySQL" | "MongoDB";
+export type DBType = "mysql" | "mongodb";
 export interface MySQLSettings {
   host: string;
   user: string;

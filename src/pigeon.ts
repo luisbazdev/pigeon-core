@@ -31,7 +31,7 @@ export let Pigeon: IPigeon = {
   }),
   settings: <ISettings>{
     auth: {
-      type: "JWT",
+      type: "none",
       basic: {
         user: "guest",
         password: "guest",
@@ -180,7 +180,7 @@ export let Pigeon: IPigeon = {
   },
   auth: function (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) {
     this.settings.auth.type = type;
-    if (type !== "None") {
+    if (type !== "none") {
       this.settings.auth[type] = { ...settings };
     }
   },
@@ -195,11 +195,11 @@ export let Pigeon: IPigeon = {
 
     this.addMiddleware(bodyMiddleware);
     this.addMiddleware(cookiesMiddleware);
-    if (this.settings.auth.type !== "None")
+    if (this.settings.auth.type !== "none")
       this.addMiddleware(authenticate());
 
     if (
-      this.settings.auth.type === "JWT" &&
+      this.settings.auth.type === "jwt" &&
       this.settings.auth.jwt.routes.enabled === "true"
     )
       this.addHandler(createAuthRoutes());

@@ -12,12 +12,12 @@ import {
 } from "./interfaces";
 
 export const authenticate: any = function () {
-  if (Pigeon.settings.auth.type === "None") return;
+  if (Pigeon.settings.auth.type === "none") return;
   switch (Pigeon.settings.auth.type) {
-    case "Basic": {
+    case "basic": {
       return basicHTTPAuthentication;
     }
-    case "JWT": {
+    case "jwt": {
       return JWTAuthentication;
     }
     default:
