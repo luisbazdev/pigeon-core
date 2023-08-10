@@ -1,5 +1,10 @@
 import { Pigeon } from "./src/pigeon";
-import { MySQLConnection, MongoDBConnection } from "./src/database";
+import {
+  MySQLConnection,
+  MongoDBConnection,
+  MySQL,
+  MongoDB,
+} from "./src/database";
 import { basicHTTPAuthentication, JWTAuthentication } from "./src/auth";
 
 export {
@@ -8,5 +13,7 @@ export {
   JWTAuthentication,
   MySQLConnection,
   MongoDBConnection,
+  MySQL,
+  MongoDB,
 };
 export * from "./src/interfaces";
