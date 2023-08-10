@@ -4,7 +4,7 @@
   "description": "",
   "main": "build/index.js",
   "scripts": {
-    "build": "rimraf build && npx tsc",
+    "build": "npx tsc",
     "prestart": "npm run build",
     "start": "node build/index.js",
     "test": "npm run build && jest"
@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "jest": "^29.6.2",
-    "rimraf": "^5.0.1",
     "typescript": "^5.1.6"
   },
   "watchOptions": {
