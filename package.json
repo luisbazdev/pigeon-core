@@ -5,13 +5,9 @@
   "main": "build/index.js",
   "scripts": {
     "build": "rimraf build && npx tsc",
-    "migrate" : "npx migrate up",
+    "migrate": "npx migrate up",
     "prestart": "npm run build",
     "start": "node build/index.js",
-    "create": "plop",
-    "create-middleware": "plop middleware",
-    "create-handler": "plop handler",
-    "create-repository": "plop repository",
     "test": "npm run build && jest"
   },
   "keywords": [],
@@ -27,7 +23,6 @@
   },
   "devDependencies": {
     "jest": "^29.6.2",
-    "plop": "^3.1.2",
     "rimraf": "^5.0.1",
     "typescript": "^5.1.6"
   },
