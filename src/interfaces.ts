@@ -72,7 +72,7 @@ export interface ISettings {
     jwt: {
       privateKey: string;
       routes: {
-        enabled: boolean;
+        enabled: string;
         login: string;
         signup: string;
         logout: string;
@@ -81,15 +81,15 @@ export interface ISettings {
   };
   db: {
     mysql: {
-      enabled: boolean;
+      enabled: string;
       host: string;
       user: string;
       password: string;
       database: string;
-      port: number;
+      port: string;
     };
     mongodb: {
-      enabled: boolean;
+      enabled: string;
       url: string;
       db: string;
       collection: string;
@@ -101,7 +101,7 @@ export type AuthType = "None" | "JWT" | "Basic";
 export interface JWTSettings {
   privateKey: string;
   routes?: {
-    enabled: boolean;
+    enabled: string;
     // work on validation for these fields
     login: string;
     signup: string;

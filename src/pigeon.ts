@@ -39,7 +39,7 @@ export let Pigeon: IPigeon = {
       jwt: {
         privateKey: "secret",
         routes: {
-          enabled: true,
+          enabled: "true",
           login: "/login",
           signup: "/signup",
           logout: "/logout",
@@ -48,15 +48,15 @@ export let Pigeon: IPigeon = {
     },
     db: {
       mysql: {
-        enabled: true,
+        enabled: "true",
         host: "localhost",
         user: "pigeon",
         password: "pigeon",
         database: "pigeon",
-        port: 3306,
+        port: "3306",
       },
       mongodb: {
-        enabled: false,
+        enabled: "false",
         url: "",
         db: "",
         collection: "",
@@ -200,7 +200,7 @@ export let Pigeon: IPigeon = {
 
     if (
       this.settings.auth.type === "JWT" &&
-      this.settings.auth.jwt.routes.enabled
+      this.settings.auth.jwt.routes.enabled === "true"
     )
       this.addHandler(createAuthRoutes());
 
