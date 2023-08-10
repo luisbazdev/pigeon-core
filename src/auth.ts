@@ -11,11 +11,9 @@ import {
   ITokenPayload,
 } from "./interfaces";
 
-const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
-
 export const authenticate: any = function () {
-  if (env.AUTHENTICATION_USE == "None") return;
-  switch (env.AUTHENTICATION_USE) {
+  if (Pigeon.settings.auth.type === "None") return;
+  switch (Pigeon.settings.auth.type) {
     case "Basic": {
       return basicHTTPAuthentication;
     }
@@ -48,8 +46,8 @@ export const basicHTTPAuthentication: IMiddlewareFunction = function (
     const password = credentials[1];
     if (
       !(
-        env.AUTHENTICATION_BASIC_USER === username &&
-        env.AUTHENTICATION_BASIC_PASSWORD === password
+        Pigeon.settings.auth.basic.user === username &&
+        Pigeon.settings.auth.basic.password === password
       )
     ) {
       return res
@@ -67,9 +65,9 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
 ) {
   const { url } = req;
   if (
-    url == "/api/auth" + env.AUTHENTICATION_JWT_ROUTES_LOGIN ||
-    url == "/api/auth" + env.AUTHENTICATION_JWT_ROUTES_REGISTER ||
-    url == "/api/auth" + env.AUTHENTICATION_JWT_ROUTES_LOGOUT
+    url == "/api/auth" + Pigeon.settings.auth.jwt.routes.login ||
+    url == "/api/auth" + Pigeon.settings.auth.jwt.routes.signup ||
+    url == "/api/auth" + Pigeon.settings.auth.jwt.routes.logout
   )
     return next();
   if (!req.get("authorization")) {
@@ -161,7 +159,7 @@ export const JWTAuthenticationLogOut: IHandlerFuction = function (
 };
 export const JWTVerifyToken = async function (token: IToken) {
   try {
-    const dec = await jwt.verify(token, env.AUTHENTICATION_JWT_PRIVATEKEY);
+    const dec = await jwt.verify(token,  Pigeon.settings.auth.jwt.privateKey);
     return dec;
   } catch (err) {
     return null;
@@ -172,7 +170,7 @@ export const JWTSignToken = async function (payload: ITokenPayload) {
   try {
     const asyncToken = await jwt.sign(
       payload,
-      env.AUTHENTICATION_JWT_PRIVATEKEY,
+      Pigeon.settings.auth.jwt.privateKey,
       {
         algorithm: "HS256",
         expiresIn: "1h",

@@ -4,11 +4,18 @@ const URL = require("node:url");
 import { IncomingMessage, ServerResponse } from "node:http";
 import { removeSlash, init, getParams } from "./util";
 import {
+  AuthType,
+  DBType,
+  HTTPBasicSettings,
   IHandler,
   IHandlerFuction,
   IMiddlewareFunction,
   IPigeon,
   IRepository,
+  ISettings,
+  JWTSettings,
+  MongoDBSettings,
+  MySQLSettings
 } from "./interfaces";
 
 export let Pigeon: IPigeon = {
@@ -19,7 +26,41 @@ export let Pigeon: IPigeon = {
     init(req, res);
     Pigeon.handle(req, res);
   }),
-  settings: {},
+  settings: <ISettings> {
+    auth: {
+      type: "JWT",
+      basic: {
+        user: "guest",
+        password: "guest",
+      },
+      jwt: {
+        privateKey: "secret",
+        routes: {
+          enabled: true,
+          login: "/login",
+          signup: "/signup",
+          logout: "/logout",
+        }
+      },
+    },
+    db: {
+      mysql: {
+        enabled: true,
+        host: "localhost",
+        user: "pigeon",
+        password: "pigeon",
+        database: "pigeon",
+        port: 3306
+      },
+      mongodb: {
+        enabled: false,
+        url: "",
+        db: "",
+        collection: "",
+      }
+    },
+    port: "2020"
+  },
   listen: function (port: string, callback: any) {
     this.server.listen(port, callback);
   },
@@ -104,7 +145,16 @@ export let Pigeon: IPigeon = {
   addMiddleware: function (_middleware: IMiddlewareFunction) {
     this.middlewares.push(_middleware);
   },
-  addSettings: function (_settings: any) {
-    this.settings = _settings;
+  auth: function(type: AuthType, settings?: JWTSettings | HTTPBasicSettings){
+    this.settings.auth.type = type;
+    if(type !== "None"){
+      this.settings.auth[type] = {...settings}
+    }
+  },
+  database: function(type: DBType, settings: MySQLSettings | MongoDBSettings){
+    this.settings.db[type] = {...settings}
+  },
+  port: function(port: string | number){
+    this.settings.port = port;
   },
 };

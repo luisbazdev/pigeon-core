@@ -1,10 +1,7 @@
 const mysql = require("mysql2/promise");
 const dotenv = require("dotenv");
 dotenv.config();
-
-// Only works in development since Pigeon.settings is not set yet
-const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
-
+// Work on this, not ready yet
 exports.up = async function () {
   const db = await mysql.createConnection({
     host: env.DATABASE_MYSQL_HOST,

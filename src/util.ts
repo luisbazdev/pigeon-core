@@ -8,19 +8,18 @@ import { Pigeon } from "./pigeon";
 import { IncomingMessage, ServerResponse } from "node:http";
 import { readFile } from "node:fs";
 
-const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
-
 export const removeSlash = function (path: string) {
   if (path.endsWith("/") && path !== "/") path = path.slice(0, -1);
   return path;
 };
 
 export const createAuthRoutes = function () {
+  // handle if mysql database is not enabled...
   if (
-    !env.DATABASE_MYSQL_HOST ||
-    !env.DATABASE_MYSQL_USER ||
-    !env.DATABASE_MYSQL_PASSWORD ||
-    !env.DATABASE_MYSQL_DATABASE
+    !Pigeon.settings.db.mysql.host ||
+    !Pigeon.settings.db.mysql.user ||
+    !Pigeon.settings.db.mysql.password ||
+    !Pigeon.settings.db.mysql.database
   ) {
     throw new Error("Set up your MySQL database settings correctly!");
   }
@@ -28,19 +27,19 @@ export const createAuthRoutes = function () {
     path: "/api/auth",
     routes: [
       {
-        route: env.AUTHENTICATION_JWT_ROUTES_LOGIN,
+        route: Pigeon.settings.auth.jwt.routes.login,
         callback: JWTAuthenticationLogIn,
         method: "POST",
         middlewares: [],
       },
       {
-        route: env.AUTHENTICATION_JWT_ROUTES_REGISTER,
+        route: Pigeon.settings.auth.jwt.routes.signup,
         callback: JWTAuthenticationSignUp,
         method: "POST",
         middlewares: [],
       },
       {
-        route: env.AUTHENTICATION_JWT_ROUTES_LOGOUT,
+        route: Pigeon.settings.auth.jwt.routes.logout,
         callback: JWTAuthenticationLogOut,
         method: "POST",
         middlewares: [],

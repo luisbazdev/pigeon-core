@@ -2,42 +2,41 @@ const mysql = require("mysql2/promise");
 const { MongoClient } = require("mongodb");
 import { Pigeon } from "./pigeon";
 
-const env = process.env.ENVIRONMENT === "dev" ? process.env : Pigeon.settings;
-
 let MySQL: any;
 let MongoDB: any;
 
 export const database = async function () {
   // initialize all databases that are enabled
-  if (env.DATABASE_MYSQL_ENABLED === "true") {
+  if (Pigeon.settings.db.mysql.enabled) {
     MySQL = await MySQLConnection();
   }
-  if (env.DATABASE_MONGODB_ENABLED === "true")
+  if (Pigeon.settings.db.mongodb.enabled) {
     MongoDB = await MongoDBConnection();
+  }
 };
 
 export const MySQLConnection = async function () {
-  if (env.DATABASE_MYSQL_ENABLED !== "true") return;
+  if (!Pigeon.settings.db.mysql.enabled) return;
   if (MySQL) return MySQL;
   const conn = await mysql.createConnection({
-    host: env.DATABASE_MYSQL_HOST,
-    user: env.DATABASE_MYSQL_USER,
-    password: env.DATABASE_MYSQL_PASSWORD,
-    database: env.DATABASE_MYSQL_DATABASE,
-    port: env.DATABASE_MYSQL_PORT ?? "3306",
+    host: Pigeon.settings.db.mysql.host,
+    user: Pigeon.settings.db.mysql.user,
+    password: Pigeon.settings.db.mysql.password,
+    database: Pigeon.settings.db.mysql.database,
+    port: Pigeon.settings.db.mysql.port ?? 3306,
   });
   MySQL = conn;
   return MySQL;
 };
 
 export const MongoDBConnection = async function () {
-  if (env.DATABASE_MONGODB_ENABLED !== "true") return;
+  if (!Pigeon.settings.db.mongodb.enabled) return;
   if (MongoDB) return MongoDB;
-  const client = new MongoClient(env.DATABASE_MONGODB_URL);
+  const client = new MongoClient(Pigeon.settings.db.mongodb.url);
   await client.connect();
   const collection = await client
-    .db(env.DATABASE_MONGODB_DB)
-    .collection(env.DATABASE_MONGODB_COLLECTION);
+    .db(Pigeon.settings.db.mongodb.db)
+    .collection(Pigeon.settings.db.mongodb.collection);
   MongoDB = collection;
   return MongoDB;
 };

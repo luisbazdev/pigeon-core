@@ -6,7 +6,7 @@
   "scripts": {
     "build": "rimraf build && npx tsc",
     "migrate" : "npx migrate up",
-    "prestart": "npm run migrate && npm run build",
+    "prestart": "npm run build",
     "start": "node build/src/index.js",
     "create": "plop",
     "create-middleware": "plop middleware",

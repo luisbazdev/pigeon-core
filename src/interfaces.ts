@@ -15,7 +15,9 @@ export interface IPigeon {
   addHandler: (handler: any) => void;
   addRepository: (name: string, repository: IRepository) => void;
   addMiddleware: (middleware: any) => void;
-  addSettings: (settings: any) => void;
+  auth: (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) => void;
+  database: (type: DBType, settings: MySQLSettings | MongoDBSettings) => void;
+  port: (port: string | number) => void;
 }
 export interface IToken {
   name: string;
@@ -61,8 +63,8 @@ export interface IRepository {
   delete?: (id: any, obj: any) => any;
 }
 export interface ISettings {
-  AUTHENTICATION: {
-    use: string;
+  auth: {
+    type: string;
     basic: {
       user: string;
       password: string;
@@ -72,18 +74,19 @@ export interface ISettings {
       routes: {
         enabled: boolean;
         login: string;
-        register: string;
+        signup: string;
         logout: string;
       };
     };
   };
-  DATABASE: {
+  db: {
     mysql: {
       enabled: boolean;
       host: string;
       user: string;
       password: string;
       database: string;
+      port: number;
     };
     mongodb: {
       enabled: boolean;
@@ -92,5 +95,33 @@ export interface ISettings {
       collection: string;
     };
   };
-  PORT: string;
+  port: string;
+}
+export type AuthType = "None" | "JWT" | "Basic";
+export interface JWTSettings {
+  privateKey: string;
+  routes?: {
+    enabled: boolean;
+    // work on validation for these fields
+    login: string;
+    signup: string;
+    logout: string;
+  };
+}
+export interface HTTPBasicSettings {
+  user: string;
+  password: string;
+}
+export type DBType = "MySQL" | "MongoDB";
+export interface MySQLSettings {
+  host: string;
+  user: string;
+  password: string;
+  database?: string;
+  port?: string;
+}
+export interface MongoDBSettings {
+  url: string;
+  db: string;
+  collection: string;
 }
