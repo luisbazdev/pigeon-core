@@ -5,7 +5,6 @@
   "main": "build/index.js",
   "scripts": {
     "build": "rimraf build && npx tsc",
-    "migrate": "npx migrate up",
     "prestart": "npm run build",
     "start": "node build/index.js",
     "test": "npm run build && jest"
@@ -18,8 +17,7 @@
     "dotenv": "^16.3.1",
     "jsonwebtoken": "^9.0.1",
     "mongodb": "^5.7.0",
-    "mysql2": "^3.5.2",
-    "node-migrate": "^0.1.0"
+    "mysql2": "^3.5.2"
   },
   "devDependencies": {
     "jest": "^29.6.2",
