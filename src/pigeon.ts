@@ -2,7 +2,7 @@ const http = require("node:http");
 const URL = require("node:url");
 
 import { IncomingMessage, ServerResponse } from "node:http";
-import { removeSlash, init, getParams } from "./util";
+import { removeSlash, init, getParams, createAuthRoutes } from "./util";
 import {
   AuthType,
   DBType,
@@ -15,9 +15,12 @@ import {
   ISettings,
   JWTSettings,
   MongoDBSettings,
-  MySQLSettings
+  MySQLSettings,
 } from "./interfaces";
-
+import { initializeDatabase } from "./database";
+import { bodyMiddleware, cookiesMiddleware } from "./middleware/built";
+import { authenticate } from "./auth";
+import { isHandlerPathValid, isHandlerRoutePathValid } from "./util";
 export let Pigeon: IPigeon = {
   middlewares: [],
   handlers: [],
@@ -26,7 +29,7 @@ export let Pigeon: IPigeon = {
     init(req, res);
     Pigeon.handle(req, res);
   }),
-  settings: <ISettings> {
+  settings: <ISettings>{
     auth: {
       type: "JWT",
       basic: {
@@ -40,7 +43,7 @@ export let Pigeon: IPigeon = {
           login: "/login",
           signup: "/signup",
           logout: "/logout",
-        }
+        },
       },
     },
     db: {
@@ -50,16 +53,16 @@ export let Pigeon: IPigeon = {
         user: "pigeon",
         password: "pigeon",
         database: "pigeon",
-        port: 3306
+        port: 3306,
       },
       mongodb: {
         enabled: false,
         url: "",
         db: "",
         collection: "",
-      }
+      },
     },
-    port: "2020"
+    port: "2020",
   },
   listen: function (port: string, callback: any) {
     this.server.listen(port, callback);
@@ -138,6 +141,36 @@ export let Pigeon: IPigeon = {
     }
     this.handlers.push(_handler);
   },
+  createHandler: function (path: string, middleware?: any[]) {
+    // if middlewares not an array: throw new Error("You must provide an array of middlewares!")
+    if (!isHandlerPathValid(path)) throw new Error("Handler path is invalid!");
+    const handler: IHandler = {
+      path: "/api" + path,
+      routes: [],
+      middlewares: middleware ?? [],
+      GET: (path, func, middleware?: any[]) => handler.createEndpoint(path, func, "GET", middleware),
+      POST: (path, func, middleware?: any[]) => handler.createEndpoint(path, func, "POST", middleware),
+      PUT: (path, func, middleware?: any[]) => handler.createEndpoint(path, func, "PUT", middleware),
+      DELETE: (path, func, middleware?: any[]) => handler.createEndpoint(path, func, "DELETE", middleware),
+      createEndpoint: (path, func, method, middleware?: any[]) => {
+        if (!isHandlerRoutePathValid(path) && path !== "/")
+          throw new Error("Handler route path is invalid!");
+        if (path === "/") path = "";
+        const routeExists = handler.routes?.find(
+          (route) => route.route === path && route.method === method
+        );
+        if (routeExists) throw new Error("Route already exists for this handler!");
+        handler.routes.push({
+          route: path,
+          callback: func,
+          method: method,
+          middlewares: middleware ?? [],
+        });
+      },
+    };
+    this.addHandler(handler)
+    return handler;
+  },
   addRepository: function (name: string, _repository: IRepository) {
     _repository.name = name;
     this.repositories.push(_repository);
@@ -145,16 +178,34 @@ export let Pigeon: IPigeon = {
   addMiddleware: function (_middleware: IMiddlewareFunction) {
     this.middlewares.push(_middleware);
   },
-  auth: function(type: AuthType, settings?: JWTSettings | HTTPBasicSettings){
+  auth: function (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) {
     this.settings.auth.type = type;
-    if(type !== "None"){
-      this.settings.auth[type] = {...settings}
+    if (type !== "None") {
+      this.settings.auth[type] = { ...settings };
     }
   },
-  database: function(type: DBType, settings: MySQLSettings | MongoDBSettings){
-    this.settings.db[type] = {...settings}
+  database: function (type: DBType, settings: MySQLSettings | MongoDBSettings) {
+    this.settings.db[type] = { ...settings };
   },
-  port: function(port: string | number){
+  port: function (port: string | number) {
     this.settings.port = port;
+  },
+  start: async function () {
+    await initializeDatabase();
+
+    this.addMiddleware(bodyMiddleware);
+    this.addMiddleware(cookiesMiddleware);
+    if (this.settings.auth.type !== "None")
+      this.addMiddleware(authenticate());
+
+    if (
+      this.settings.auth.type === "JWT" &&
+      this.settings.auth.jwt.routes.enabled
+    )
+      this.addHandler(createAuthRoutes());
+
+    this.listen(this.settings.port, () => {
+      console.log(`Your API is running on port ${this.settings.port}`);
+    });
   },
 };

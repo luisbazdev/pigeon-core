@@ -13,11 +13,13 @@ export interface IPigeon {
   ) => void;
   handle: (req: IncomingMessage, res: ServerResponse) => any;
   addHandler: (handler: any) => void;
+  createHandler: (path: string, middleware?: any[]) => any;
   addRepository: (name: string, repository: IRepository) => void;
   addMiddleware: (middleware: any) => void;
   auth: (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) => void;
   database: (type: DBType, settings: MySQLSettings | MongoDBSettings) => void;
   port: (port: string | number) => void;
+  start: () => void;
 }
 export interface IToken {
   name: string;
@@ -46,11 +48,9 @@ export interface IHandler {
     middleware?: any[]
   ) => void;
 }
-
 export interface IMiddlewareFunction {
   (req: IncomingMessage, res: ServerResponse, next: Function): void;
 }
-
 export interface IHandlerFuction {
   (req: IncomingMessage, res: ServerResponse): any;
 }

@@ -11,8 +11,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node16",
-    "outDir": "build/src",
+    "outDir": "build",
     "preserveWatchOutput": true
   },
-  "include": ["src/*.ts", "src/**/*.ts"]
+  "include": ["src/*.ts", "src/**/*.ts", "index.ts"]
 }

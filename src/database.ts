@@ -5,7 +5,7 @@ import { Pigeon } from "./pigeon";
 let MySQL: any;
 let MongoDB: any;
 
-export const database = async function () {
+export const initializeDatabase = async function () {
   // initialize all databases that are enabled
   if (Pigeon.settings.db.mysql.enabled) {
     MySQL = await MySQLConnection();
