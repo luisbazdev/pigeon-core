@@ -1,42 +1,42 @@
-const { createHandler } = require("../build/src/handler");
-const handler = createHandler("/users", []);
+const { Pigeon } = require("../build/src/pigeon")
+const handler = Pigeon.createHandler("/users", []);
 describe("Handler creation", () => {
   it("should not create a handler with a path with characters other than letters, numbers, '-', '=' and '/'", () => {
-    expect(() => createHandler("/users%", [])).toThrow();
-    expect(() => createHandler("/users#", [])).toThrow();
-    expect(() => createHandler("/users$", [])).toThrow();
-    expect(() => createHandler("/users?name=Luis&age=21", [])).toThrow();
-    expect(() => createHandler("/users?", [])).toThrow();
-    expect(() => createHandler("/users?&", [])).toThrow();
-    expect(() => createHandler("/:users", [])).toThrow();
+    expect(() => Pigeon.createHandler("/users%", [])).toThrow();
+    expect(() => Pigeon.createHandler("/users#", [])).toThrow();
+    expect(() => Pigeon.createHandler("/users$", [])).toThrow();
+    expect(() => Pigeon.createHandler("/users?name=Luis&age=21", [])).toThrow();
+    expect(() => Pigeon.createHandler("/users?", [])).toThrow();
+    expect(() => Pigeon.createHandler("/users?&", [])).toThrow();
+    expect(() => Pigeon.createHandler("/:users", [])).toThrow();
   });
   it("should not create a handler with a path with blank spaces", () => {
-    expect(() => createHandler(" ", [])).toThrow();
-    expect(() => createHandler("/user s", [])).toThrow();
+    expect(() => Pigeon.createHandler(" ", [])).toThrow();
+    expect(() => Pigeon.createHandler("/user s", [])).toThrow();
   });
   it("should not create a handler with an empty path", () => {
-    expect(() => createHandler("", [])).toThrow();
+    expect(() => Pigeon.createHandler("", [])).toThrow();
   });
   it("should not create a handler with path '/'", () => {
-    expect(() => createHandler("/", [])).toThrow();
+    expect(() => Pigeon.createHandler("/", [])).toThrow();
   });
   it("should not create a handler with path that contains '//'", () => {
-    expect(() => createHandler("//users", [])).toThrow();
+    expect(() => Pigeon.createHandler("//users", [])).toThrow();
   });
   it("should not create a handler with a path that does not start with '/'", () => {
-    expect(() => createHandler("users/", [])).toThrow();
-    expect(() => createHandler("user", [])).toThrow();
+    expect(() => Pigeon.createHandler("users/", [])).toThrow();
+    expect(() => Pigeon.createHandler("user", [])).toThrow();
   });
   it("should not create a handler with path '/api'", () => {
-    expect(() => createHandler("/api", [])).toThrow();
+    expect(() => Pigeon.createHandler("/api", [])).toThrow();
   });
   it("should not create a handler with a path that contains '/' twice", () => {
-    expect(() => createHandler("/users/me", [])).toThrow();
-    expect(() => createHandler("//users", [])).toThrow();
+    expect(() => Pigeon.createHandler("/users/me", [])).toThrow();
+    expect(() => Pigeon.createHandler("//users", [])).toThrow();
   });
   it("should not create a handler with a path that ends with '/'", () => {
-    expect(() => createHandler("/users/", [])).toThrow();
-    expect(() => createHandler("users/", [])).toThrow();
+    expect(() => Pigeon.createHandler("/users/", [])).toThrow();
+    expect(() => Pigeon.createHandler("users/", [])).toThrow();
   });
 });
 
