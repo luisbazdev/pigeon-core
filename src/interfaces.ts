@@ -19,6 +19,7 @@ export interface IPigeon {
   auth: (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) => void;
   database: (type: DBType, settings: MySQLSettings | MongoDBSettings) => void;
   port: (port: string | number) => void;
+  initialize: () => void;
   start: () => void;
 }
 export interface IToken {
@@ -56,11 +57,11 @@ export interface IHandlerFuction {
 }
 export interface IRepository {
   name?: string;
-  create?: (data: any) => any;
-  findById?: (id: number) => object;
-  findAll?: () => any;
-  update?: (id: any, obj: any) => any;
-  delete?: (id: any, obj: any) => any;
+  create: (data: any) => any;
+  findById: (id: number) => object;
+  findAll: () => any;
+  update: (id: any, obj: any) => any;
+  delete: (id: any, obj: any) => any;
 }
 export interface ISettings {
   auth: {
@@ -114,6 +115,7 @@ export interface HTTPBasicSettings {
 }
 export type DBType = "mysql" | "mongodb";
 export interface MySQLSettings {
+  enabled?: string;
   host: string;
   user: string;
   password: string;
@@ -121,6 +123,7 @@ export interface MySQLSettings {
   port?: string;
 }
 export interface MongoDBSettings {
+  enabled?: string;
   url: string;
   db: string;
   collection: string;

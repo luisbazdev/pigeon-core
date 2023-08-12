@@ -21,6 +21,8 @@ import { initializeDatabase } from "./database";
 import { bodyMiddleware, cookiesMiddleware } from "./middleware/built";
 import { authenticate } from "./auth";
 import { isHandlerPathValid, isHandlerRoutePathValid } from "./util";
+import * as path from "node:path";
+import * as fs from "node:fs/promises";
 export let Pigeon: IPigeon = {
   middlewares: [],
   handlers: [],
@@ -185,12 +187,12 @@ export let Pigeon: IPigeon = {
     }
   },
   database: function (type: DBType, settings: MySQLSettings | MongoDBSettings) {
-    this.settings.db[type] = { ...settings };
+    this.settings.db[type] = { enabled: "true", ...settings };
   },
   port: function (port: string | number) {
     this.settings.port = port;
   },
-  start: async function () {
+  initialize: async function() {
     await initializeDatabase();
 
     this.addMiddleware(bodyMiddleware);
@@ -203,7 +205,19 @@ export let Pigeon: IPigeon = {
       this.settings.auth.jwt.routes.enabled === "true"
     )
       this.addHandler(createAuthRoutes());
-
+  },
+  start: async function () {
+    await this.initialize();
+    const handlersDir = path.join(process.cwd(), "build", "src", "handler");
+    try {
+      const files = await fs.readdir(handlersDir);
+      for (const file of files) {
+        const filePath = path.join(handlersDir, file);
+        require(filePath);
+      }
+    } catch (err) {
+      console.error(err);
+    }
     this.listen(this.settings.port, () => {
       console.log(`Your API is running on port ${this.settings.port}`);
     });
