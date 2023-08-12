@@ -41,7 +41,7 @@ export let Pigeon: IPigeon = {
       jwt: {
         privateKey: "secret",
         routes: {
-          enabled: "true",
+          enabled: "false",
           login: "/login",
           signup: "/signup",
           logout: "/logout",
@@ -50,18 +50,18 @@ export let Pigeon: IPigeon = {
     },
     db: {
       mysql: {
-        enabled: "true",
-        host: "localhost",
-        user: "pigeon",
-        password: "pigeon",
-        database: "pigeon",
+        enabled: "false",
+        host: "host",
+        user: "user",
+        password: "password",
+        database: "database",
         port: "3306",
       },
       mongodb: {
         enabled: "false",
-        url: "",
-        db: "",
-        collection: "",
+        url: "url",
+        db: "db",
+        collection: "collection",
       },
     },
     port: "2020",
