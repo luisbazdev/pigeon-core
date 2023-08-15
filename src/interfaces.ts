@@ -33,6 +33,7 @@ export interface ITokenPayload {
   name: string;
   email: string;
   roles: string[];
+  id: string | number;
 }
 export interface IHandler {
   path: string;

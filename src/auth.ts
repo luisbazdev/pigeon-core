@@ -84,8 +84,13 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
     if (!valid) {
       return res.status(401).json({ message: "Not Valid" });
     }
-    const { roles } = valid;
-    req.roles = roles;
+    const user = {
+      name: valid.name,
+      email: valid.email,
+      roles: valid.roles,
+      id: valid.id
+    }
+    req.user = user;
   }
   next();
 };
@@ -111,6 +116,7 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
         name: rows[0].name,
         email,
         roles,
+        id
       });
       res.json({ token });
     } else {
