@@ -15,6 +15,14 @@ export const initializeDatabase = async function () {
   }
 };
 
+const testMySQLConnection = async function (conn: any) {
+  try {
+    await conn.query("SELECT 1"); // Test the connection
+  } catch (error: any) {
+    throw new Error("Failed to establish MySQL connection: " + error.message);
+  }
+};
+
 export const MySQLConnection = async function () {
   if (Pigeon.settings.db.mysql.enabled !== "true") return;
   if (MySQL) return MySQL;
@@ -25,6 +33,7 @@ export const MySQLConnection = async function () {
     database: Pigeon.settings.db.mysql.database,
     port: Pigeon.settings.db.mysql.port ?? "3306",
   });
+  await testMySQLConnection(conn);
   MySQL = conn;
   return MySQL;
 };
