@@ -102,7 +102,7 @@ export let Pigeon: IPigeon = {
     const firstSegment = pathSegments[1];
     const secondSegment = "/api/" + pathSegments[2];
     if (firstSegment !== "api")
-      return res.status(404).send("Route Not Found...");
+      return res.status(404).json({error: "The requested resource could not be found."});
 
     const handler = Pigeon?.handlers?.find((handler) => {
       const regex = new RegExp(`^${handler.path.replace(/:\w+/g, "([^/]+)")}$`);
@@ -131,7 +131,7 @@ export let Pigeon: IPigeon = {
         ...foundRoute.middlewares,
         foundRoute.callback
       );
-    } else return res.status(404).send("Route Not Found...");
+    } else return res.status(404).json({error: "The requested resource could not be found."});
 
     await Pigeon.run(appMiddlewares, req, res);
   },

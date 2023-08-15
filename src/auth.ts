@@ -55,7 +55,7 @@ export const basicHTTPAuthentication: IMiddlewareFunction = function (
       return res
         .status(401)
         .set("WWW-Authenticate", "Basic")
-        .end("Wrong Credentials");
+        .json({error: "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again."});
     }
   }
   next();
@@ -76,12 +76,12 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
   if (!req.get("authorization")) {
     return res
       .status(401)
-      .json({ message: "Authorization header not present" });
+      .json({error: "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again."});
   } else {
     const authorization = req.get("authorization")?.split(" ");
     const type = authorization?.[0];
     if (type != "Bearer")
-      res.status(401).json({ message: "Must use Bearer type authentication" });
+      res.status(401).json({error: "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again."});
     const token = authorization?.[1];
     const valid = await JWTVerifyToken(token);
     if (!valid) {
@@ -121,12 +121,12 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
         roles,
         id,
       });
-      res.json({ token });
+      res.status(200).json({ token });
     } else {
-      res.send("Wrong password");
+      res.status(401).json({error: "Invalid credentials. Please check your username and password."});
     }
   } else {
-    res.send("User does not exist");
+    res.status(404).json({error: "User not found. Please check the email you provided."})
   }
 };
 export const JWTAuthenticationSignUp: IHandlerFuction = async function (
@@ -139,7 +139,7 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
     `SELECT * FROM users WHERE email = '${email}'`
   );
   if (users.length > 0) {
-    res.status(500).send("User already exists!");
+    res.status(409).json({error: "Email already exists. Please choose a different email."})
   } else {
     const query = await MySQL.query(
       `INSERT INTO users (name, email, password) VALUES ('${name}', '${email}', '${hashedPassword}')`
@@ -149,7 +149,7 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
     await MySQL.query(
       `INSERT INTO user_roles (user_id, role) VALUES (${insertId}, 'user');`
     );
-    res.send("User created successfully!");
+    res.status(201).end()
   }
 };
 export const JWTAuthenticationLogOut: IHandlerFuction = function (
@@ -163,7 +163,7 @@ export const JWTAuthenticationLogOut: IHandlerFuction = function (
   const token = authorization?.[1];
   const valid = JWTVerifyToken(token);
   //if(!valid) ...
-  res.status(200).json({ message: "Successfully logged out" });
+  res.status(200).end()
   // check if jtw is valid, if it is, remove it from the client
 };
 export const JWTVerifyToken = async function (token: IToken) {
