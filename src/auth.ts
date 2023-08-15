@@ -27,10 +27,11 @@ export const authenticate: any = function () {
   }
 };
 export const basicHTTPAuthentication: IMiddlewareFunction = function (
-  req: any,
-  res: any,
+  req: IncomingMessage,
+  res: ServerResponse,
   next: Function
 ) {
+  console.log(req.get)
   if (!req.get("authorization")) {
     return res
       .status(401)
@@ -61,8 +62,8 @@ export const basicHTTPAuthentication: IMiddlewareFunction = function (
   next();
 };
 export const JWTAuthentication: IMiddlewareFunction = async function (
-  req: any,
-  res: any,
+  req: IncomingMessage,
+  res: ServerResponse,
   next: Function
 ) {
   const { url } = req;
@@ -99,8 +100,8 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
 };
 // give a JWT token to the user
 export const JWTAuthenticationLogIn: IHandlerFuction = async function (
-  req: any,
-  res: any
+  req: IncomingMessage,
+  res: ServerResponse
 ) {
   const { email, password } = req.body;
   // find user
@@ -130,8 +131,8 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
   }
 };
 export const JWTAuthenticationSignUp: IHandlerFuction = async function (
-  req: any,
-  res: any
+  req: IncomingMessage,
+  res: ServerResponse
 ) {
   const { name, email, password } = req.body;
   const hashedPassword = await bcryptHashPassword(password);
@@ -153,8 +154,8 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
   }
 };
 export const JWTAuthenticationLogOut: IHandlerFuction = function (
-  req: any,
-  res: any
+  req: IncomingMessage,
+  res: ServerResponse
 ) {
   const authorization = req.get("authorization")?.split(" ");
   const type = authorization?.[0];

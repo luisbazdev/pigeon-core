@@ -1,3 +1,6 @@
+import "./src/request";
+import "./src/response";
+
 import { Pigeon } from "./src/pigeon";
 import {
   MySQLConnection,

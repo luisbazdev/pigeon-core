@@ -132,3 +132,10 @@ export interface MongoDBSettings {
   db: string;
   collection: string;
 }
+export interface JWTLogInCredentials {
+  email: string;
+  password: string;
+}
+export interface JWTSignUpCredentials extends JWTLogInCredentials {
+  name: string;
+}

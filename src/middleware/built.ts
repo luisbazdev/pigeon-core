@@ -2,8 +2,8 @@ import { IncomingMessage, ServerResponse } from "node:http";
 import { IMiddlewareFunction } from "../interfaces";
 
 export const bodyMiddleware: IMiddlewareFunction = function (
-  req: any,
-  res: any,
+  req: IncomingMessage,
+  res: ServerResponse,
   next: Function
 ) {
   let { method, headers } = req;
@@ -21,8 +21,8 @@ export const bodyMiddleware: IMiddlewareFunction = function (
 };
 
 export const cookiesMiddleware: IMiddlewareFunction = function (
-  req: any,
-  res: any,
+  req: IncomingMessage,
+  res: ServerResponse,
   next: Function
 ) {
   const cookiesString = req.headers.cookie || "";

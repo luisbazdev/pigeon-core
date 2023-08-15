@@ -5,11 +5,9 @@ import {
 } from "./auth";
 
 import { Pigeon } from "./pigeon";
-import { IncomingMessage, ServerResponse } from "node:http";
-import { readFile } from "node:fs";
 
-export const removeSlash = function (path: string) {
-  if (path.endsWith("/") && path !== "/") path = path.slice(0, -1);
+export const removeSlash = function (path: string | undefined) {
+  if (path?.endsWith("/") && path !== "/") path = path?.slice(0, -1);
   return path;
 };
 
@@ -46,76 +44,6 @@ export const createAuthRoutes = function () {
       },
     ],
     middlewares: [],
-  };
-};
-
-export const init = function (req: any, res: any) {
-  req.get = function (header: string) {
-    return this.headers[header];
-  };
-  res.download = function (filePath: string) {
-    this.set("Content-Disposition", "attachment; filename=" + filePath);
-    readFile(
-      `${__dirname}../../../static/${filePath}`,
-      (error: any, data: any) => {
-        if (error) throw error;
-        this.end();
-      }
-    );
-  };
-  res.redirect = function (to: string) {
-    this.writeHead(302, { Location: to }).end();
-  };
-  res.set = function (header: string, value: string) {
-    this.setHeader(header, value);
-    return this;
-  };
-  res.send = function (value: any) {
-    if (typeof value == "object") return this.json(value);
-    this.setHeader("Content-Type", "text/html");
-    return this.end(value);
-  };
-  res.sendFile = function (filePath: string) {
-    readFile(
-      `${__dirname}../../../static/${filePath}`,
-      (error: any, data: any) => {
-        if (error) throw error;
-        this.setHeader("Content-Type", getContentType(filePath));
-        return this.end(data);
-      }
-    );
-  };
-  res.json = function (val: any) {
-    this.setHeader("Content-Type", "application/json");
-    return this.end(JSON.stringify(val));
-  };
-  res.status = function (status: number) {
-    this.statusCode = status;
-    return this;
-  };
-  res.cookie = function (name: string, value: string, options: any) {
-    const cookieOptions: any = {
-      Domain: options.domain,
-      Expires: options.expires,
-      HttpOnly: options.httpOnly,
-      "Max-Age": options.maxAge,
-      Path: options.path,
-      Secure: options.secure,
-      Signed: options.signed,
-      SameSite: options.sameSite,
-    };
-
-    let cookieString = `${name}=${value};`;
-
-    for (const option in cookieOptions) {
-      if (cookieOptions[option]) {
-        cookieString += ` ${option}=${cookieOptions[option]};`;
-      }
-    }
-
-    this.setHeader("Set-Cookie", cookieString);
-
-    return this;
   };
 };
 
@@ -167,7 +95,7 @@ export const isHandlerRoutePathValid = function (handlerRoutePath: string) {
   );
 };
 
-const getContentType = function (path: string) {
+export const getContentType = function (path: string) {
   const extension = path.split(".")[1];
   switch (extension) {
     case "mp3": {

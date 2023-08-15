@@ -1,8 +1,7 @@
 const http = require("node:http");
 const URL = require("node:url");
 
-import { IncomingMessage, ServerResponse } from "node:http";
-import { removeSlash, init, getParams, createAuthRoutes } from "./util";
+import { removeSlash, getParams, createAuthRoutes } from "./util";
 import {
   AuthType,
   DBType,
@@ -23,17 +22,19 @@ import { authenticate } from "./auth";
 import { isHandlerPathValid, isHandlerRoutePathValid } from "./util";
 import * as path from "node:path";
 import * as fs from "node:fs/promises";
+
+import { IncomingMessage, ServerResponse } from "node:http";
+
 export let Pigeon: IPigeon = {
   middlewares: [],
   handlers: [],
   repositories: [],
   server: http.createServer((req: IncomingMessage, res: ServerResponse) => {
-    init(req, res);
     Pigeon.handle(req, res);
   }),
   settings: <ISettings>{
     auth: {
-      type: "none",
+      type: "basic",
       basic: {
         user: "guest",
         password: "guest",
@@ -89,7 +90,7 @@ export let Pigeon: IPigeon = {
       await appMiddlewares[0](req, res, next);
     }
   },
-  handle: async function (req: any, res: any) {
+  handle: async function (req: IncomingMessage, res: ServerResponse) {
     // Middleware cycle:
     // General middleware -> Handler middleware -> Route middleware -> Callback function
     let appMiddlewares = [...Pigeon.middlewares];
@@ -102,7 +103,9 @@ export let Pigeon: IPigeon = {
     const firstSegment = pathSegments[1];
     const secondSegment = "/api/" + pathSegments[2];
     if (firstSegment !== "api")
-      return res.status(404).json({error: "The requested resource could not be found."});
+      return res
+        .status(404)
+        .json({ error: "The requested resource could not be found." });
 
     const handler = Pigeon?.handlers?.find((handler) => {
       const regex = new RegExp(`^${handler.path.replace(/:\w+/g, "([^/]+)")}$`);
@@ -113,7 +116,7 @@ export let Pigeon: IPigeon = {
     const foundRoute = handler?.routes?.find((route: any) => {
       const regex = new RegExp(`^${route.route.replace(/:\w+/g, "([^/]+)")}$`);
       const match =
-        url.substring(secondSegment.length).match(regex) &&
+        url?.substring(secondSegment.length).match(regex) &&
         route.method === method;
       if (match) {
         req.query = query;
@@ -131,7 +134,10 @@ export let Pigeon: IPigeon = {
         ...foundRoute.middlewares,
         foundRoute.callback
       );
-    } else return res.status(404).json({error: "The requested resource could not be found."});
+    } else
+      return res
+        .status(404)
+        .json({ error: "The requested resource could not be found." });
 
     await Pigeon.run(appMiddlewares, req, res);
   },
