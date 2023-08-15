@@ -18,7 +18,7 @@ export const initializeDatabase = async function () {
 export const MySQLConnection = async function () {
   if (Pigeon.settings.db.mysql.enabled !== "true") return;
   if (MySQL) return MySQL;
-  const conn = await mysql.createConnection({
+  const conn = await mysql.createPool({
     host: Pigeon.settings.db.mysql.host,
     user: Pigeon.settings.db.mysql.user,
     password: Pigeon.settings.db.mysql.password,
