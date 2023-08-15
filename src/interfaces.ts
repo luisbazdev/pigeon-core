@@ -26,6 +26,7 @@ export interface IToken {
   name: string;
   email: string;
   roles: string[];
+  id: string | number;
   iat: number;
   exp: number;
 }
@@ -72,6 +73,7 @@ export interface ISettings {
       password: string;
     };
     jwt: {
+      global: string;
       privateKey: string;
       routes: {
         enabled: string;
@@ -101,6 +103,7 @@ export interface ISettings {
 }
 export type AuthType = "none" | "jwt" | "basic";
 export interface JWTSettings {
+  global: string;
   privateKey: string;
   routes?: {
     enabled: string;

@@ -18,7 +18,9 @@ export const authenticate: any = function () {
       return basicHTTPAuthentication;
     }
     case "jwt": {
-      return JWTAuthentication;
+      if (Pigeon.settings.auth.jwt.global === "true") {
+        return JWTAuthentication;
+      }
     }
     default:
       return;
@@ -65,9 +67,10 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
 ) {
   const { url } = req;
   if (
-    url == "/api/auth" + Pigeon.settings.auth.jwt.routes.login ||
-    url == "/api/auth" + Pigeon.settings.auth.jwt.routes.signup ||
-    url == "/api/auth" + Pigeon.settings.auth.jwt.routes.logout
+    Pigeon.settings.auth.jwt.routes.enabled === "true" &&
+    (url == "/api/auth" + Pigeon.settings.auth.jwt.routes.login ||
+      url == "/api/auth" + Pigeon.settings.auth.jwt.routes.signup ||
+      url == "/api/auth" + Pigeon.settings.auth.jwt.routes.logout)
   )
     return next();
   if (!req.get("authorization")) {
@@ -88,8 +91,8 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
       name: valid.name,
       email: valid.email,
       roles: valid.roles,
-      id: valid.id
-    }
+      id: valid.id,
+    };
     req.user = user;
   }
   next();
@@ -116,7 +119,7 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
         name: rows[0].name,
         email,
         roles,
-        id
+        id,
       });
       res.json({ token });
     } else {
@@ -165,7 +168,7 @@ export const JWTAuthenticationLogOut: IHandlerFuction = function (
 };
 export const JWTVerifyToken = async function (token: IToken) {
   try {
-    const dec = await jwt.verify(token,  Pigeon.settings.auth.jwt.privateKey);
+    const dec = await jwt.verify(token, Pigeon.settings.auth.jwt.privateKey);
     return dec;
   } catch (err) {
     return null;

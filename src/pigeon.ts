@@ -39,6 +39,7 @@ export let Pigeon: IPigeon = {
         password: "guest",
       },
       jwt: {
+        global: "false",
         privateKey: "secret",
         routes: {
           enabled: "false",
@@ -150,10 +151,14 @@ export let Pigeon: IPigeon = {
       path: "/api" + path,
       routes: [],
       middlewares: middleware ?? [],
-      GET: (path, func, middleware?: any[]) => handler.createEndpoint(path, func, "GET", middleware),
-      POST: (path, func, middleware?: any[]) => handler.createEndpoint(path, func, "POST", middleware),
-      PUT: (path, func, middleware?: any[]) => handler.createEndpoint(path, func, "PUT", middleware),
-      DELETE: (path, func, middleware?: any[]) => handler.createEndpoint(path, func, "DELETE", middleware),
+      GET: (path, func, middleware?: any[]) =>
+        handler.createEndpoint(path, func, "GET", middleware),
+      POST: (path, func, middleware?: any[]) =>
+        handler.createEndpoint(path, func, "POST", middleware),
+      PUT: (path, func, middleware?: any[]) =>
+        handler.createEndpoint(path, func, "PUT", middleware),
+      DELETE: (path, func, middleware?: any[]) =>
+        handler.createEndpoint(path, func, "DELETE", middleware),
       createEndpoint: (path, func, method, middleware?: any[]) => {
         if (!isHandlerRoutePathValid(path) && path !== "/")
           throw new Error("Handler route path is invalid!");
@@ -161,7 +166,8 @@ export let Pigeon: IPigeon = {
         const routeExists = handler.routes?.find(
           (route) => route.route === path && route.method === method
         );
-        if (routeExists) throw new Error("Route already exists for this handler!");
+        if (routeExists)
+          throw new Error("Route already exists for this handler!");
         handler.routes.push({
           route: path,
           callback: func,
@@ -170,7 +176,7 @@ export let Pigeon: IPigeon = {
         });
       },
     };
-    this.addHandler(handler)
+    this.addHandler(handler);
     return handler;
   },
   addRepository: function (name: string, _repository: IRepository) {
@@ -178,10 +184,9 @@ export let Pigeon: IPigeon = {
     this.repositories.push(_repository);
   },
   addMiddleware: function (_middleware: IMiddlewareFunction) {
-    this.middlewares.push(_middleware);
+    if (_middleware) this.middlewares.push(_middleware);
   },
   auth: function (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) {
-    this.settings.auth.type = type;
     if (type !== "none") {
       this.settings.auth[type] = { ...settings };
     }
@@ -192,13 +197,12 @@ export let Pigeon: IPigeon = {
   port: function (port: string | number) {
     this.settings.port = port;
   },
-  initialize: async function() {
+  initialize: async function () {
     await initializeDatabase();
 
     this.addMiddleware(bodyMiddleware);
     this.addMiddleware(cookiesMiddleware);
-    if (this.settings.auth.type !== "none")
-      this.addMiddleware(authenticate());
+    if (this.settings.auth.type !== "none") this.addMiddleware(authenticate());
 
     if (
       this.settings.auth.type === "jwt" &&
