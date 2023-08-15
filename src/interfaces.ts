@@ -123,7 +123,7 @@ export interface MySQLSettings {
   host: string;
   user: string;
   password: string;
-  database?: string;
+  database: string;
   port?: string;
 }
 export interface MongoDBSettings {
