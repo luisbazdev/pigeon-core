@@ -7,7 +7,14 @@ export const bodyMiddleware: IMiddlewareFunction = function (
   next: Function
 ) {
   let { method, headers } = req;
-  if (method != "POST") return next();
+  if (
+    method === "GET" ||
+    method === "HEAD" ||
+    method === "DELETE" ||
+    method === "OPTIONS" ||
+    method === "TRACE"
+  )
+    return next();
   if (headers["content-type"] !== "application/json") return next();
   let body = "";
 
