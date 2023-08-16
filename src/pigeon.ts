@@ -193,6 +193,7 @@ export let Pigeon: IPigeon = {
     if (_middleware) this.middlewares.push(_middleware);
   },
   auth: function (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) {
+    this.settings.auth.type = type;
     if (type !== "none") {
       this.settings.auth[type] = { ...settings };
     }
