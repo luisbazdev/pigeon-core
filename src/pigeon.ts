@@ -198,9 +198,6 @@ export let Pigeon: IPigeon = {
       this.settings.auth[type] = { ...settings };
     }
   },
-  database: function (type: DBType, settings: MySQLSettings | MongoDBSettings) {
-    this.settings.db[type] = { enabled: "true", ...settings };
-  },
   port: function (port: string | number) {
     this.settings.port = port;
   },

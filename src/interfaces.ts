@@ -17,7 +17,6 @@ export interface IPigeon {
   addRepository: (name: string, repository: IRepository) => void;
   addMiddleware: (middleware: any) => void;
   auth: (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) => void;
-  database: (type: DBType, settings: MySQLSettings | MongoDBSettings) => void;
   port: (port: string | number) => void;
   initialize: () => void;
   start: () => void;
