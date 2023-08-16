@@ -13,7 +13,7 @@ export interface IPigeon {
   ) => void;
   handle: (req: IncomingMessage, res: ServerResponse) => any;
   addHandler: (handler: any) => void;
-  createHandler: (path: string, middleware?: any[]) => any;
+  createHandler: (path: string, middleware?: IMiddlewareFunction[]) => IPigeonHandler;
   addRepository: (name: string, repository: IRepository) => void;
   addMiddleware: (middleware: any) => void;
   auth: (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) => void;
@@ -35,20 +35,22 @@ export interface ITokenPayload {
   roles: string[];
   id: string | number;
 }
-export interface IHandler {
+export interface IHandler extends IPigeonHandler {
   path: string;
   routes: any[];
   middlewares: any[];
-  GET: (path: string, func: string, middleware?: any[]) => void;
-  POST: (path: string, func: string, middleware?: any[]) => void;
-  PUT: (path: string, func: string, middleware?: any[]) => void;
-  DELETE: (path: string, func: string, middleware?: any[]) => void;
   createEndpoint: (
     path: string,
-    func: string,
+    callback: IHandlerFuction,
     method: string,
-    middleware?: any[]
+    middleware?: IMiddlewareFunction[]
   ) => void;
+}
+export interface IPigeonHandler {
+  GET: (path: string, callback: IHandlerFuction, middleware?: IMiddlewareFunction[]) => void;
+  POST: (path: string, callback: IHandlerFuction, middleware?: IMiddlewareFunction[]) => void;
+  PUT: (path: string, callback: IHandlerFuction, middleware?: IMiddlewareFunction[]) => void;
+  DELETE: (path: string, callback: IHandlerFuction, middleware?: IMiddlewareFunction[]) => void;
 }
 export interface IMiddlewareFunction {
   (req: IncomingMessage, res: ServerResponse, next: Function): void;

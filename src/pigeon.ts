@@ -157,15 +157,15 @@ export let Pigeon: IPigeon = {
       path: "/api" + path,
       routes: [],
       middlewares: middleware ?? [],
-      GET: (path, func, middleware?: any[]) =>
-        handler.createEndpoint(path, func, "GET", middleware),
-      POST: (path, func, middleware?: any[]) =>
-        handler.createEndpoint(path, func, "POST", middleware),
-      PUT: (path, func, middleware?: any[]) =>
-        handler.createEndpoint(path, func, "PUT", middleware),
-      DELETE: (path, func, middleware?: any[]) =>
-        handler.createEndpoint(path, func, "DELETE", middleware),
-      createEndpoint: (path, func, method, middleware?: any[]) => {
+      GET: (path, callback, middleware?: any[]) =>
+        handler.createEndpoint(path, callback, "GET", middleware),
+      POST: (path, callback, middleware?: any[]) =>
+        handler.createEndpoint(path, callback, "POST", middleware),
+      PUT: (path, callback, middleware?: any[]) =>
+        handler.createEndpoint(path, callback, "PUT", middleware),
+      DELETE: (path, callback, middleware?: any[]) =>
+        handler.createEndpoint(path, callback, "DELETE", middleware),
+      createEndpoint: (path, callback, method, middleware?: IMiddlewareFunction[]) => {
         if (!isHandlerRoutePathValid(path) && path !== "/")
           throw new Error("Handler route path is invalid!");
         if (path === "/") path = "";
@@ -176,7 +176,7 @@ export let Pigeon: IPigeon = {
           throw new Error("Route already exists for this handler!");
         handler.routes.push({
           route: path,
-          callback: func,
+          callback,
           method: method,
           middlewares: middleware ?? [],
         });
