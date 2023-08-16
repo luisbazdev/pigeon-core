@@ -64,7 +64,7 @@ export interface IRepository {
   findById: (id: number) => object;
   findAll: () => any;
   update: (id: any, obj: any) => any;
-  delete: (id: any, obj: any) => any;
+  delete: (id: any) => any;
 }
 export interface ISettings {
   auth: {
