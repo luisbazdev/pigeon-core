@@ -12,15 +12,6 @@ export const removeSlash = function (path: string | undefined) {
 };
 
 export const createAuthRoutes = function () {
-  // handle if mysql database is not enabled...
-  if (
-    !Pigeon.settings.db.mysql.host ||
-    !Pigeon.settings.db.mysql.user ||
-    !Pigeon.settings.db.mysql.password ||
-    !Pigeon.settings.db.mysql.database
-  ) {
-    throw new Error("Set up your MySQL database settings correctly!");
-  }
   return {
     path: "/api/auth",
     routes: [
