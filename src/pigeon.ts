@@ -16,7 +16,6 @@ import {
   MongoDBSettings,
   MySQLSettings,
 } from "./interfaces";
-import { initializeDatabase } from "./database";
 import { bodyMiddleware, cookiesMiddleware } from "./middleware/built";
 import { authenticate } from "./auth";
 import { isHandlerPathValid, isHandlerRoutePathValid } from "./util";
@@ -34,7 +33,7 @@ export let Pigeon: IPigeon = {
   }),
   settings: <ISettings>{
     auth: {
-      type: "basic",
+      type: "none",
       basic: {
         user: "guest",
         password: "guest",
@@ -202,8 +201,6 @@ export let Pigeon: IPigeon = {
     this.settings.port = port;
   },
   initialize: async function () {
-    await initializeDatabase();
-
     this.addMiddleware(bodyMiddleware);
     this.addMiddleware(cookiesMiddleware);
     if (this.settings.auth.type !== "none") this.addMiddleware(authenticate());

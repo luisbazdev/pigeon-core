@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 import { IncomingMessage, ServerResponse } from "node:http";
-import { MySQL } from "./database";
 import { Pigeon } from "./pigeon";
 import {
   IHandlerFuction,
@@ -10,6 +9,9 @@ import {
   IToken,
   ITokenPayload,
 } from "./interfaces";
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient();
 
 export const authenticate: any = function () {
   if (Pigeon.settings.auth.type === "none") return;
@@ -31,7 +33,6 @@ export const basicHTTPAuthentication: IMiddlewareFunction = function (
   res: ServerResponse,
   next: Function
 ) {
-  console.log(req.get)
   if (!req.get("authorization")) {
     return res
       .status(401)
@@ -86,7 +87,7 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
     const token = authorization?.[1];
     const valid = await JWTVerifyToken(token);
     if (!valid) {
-      return res.status(401).json({ message: "Not Valid" });
+      return res.status(401).json({error: "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again."});
     }
     const user = {
       name: valid.name,
@@ -105,21 +106,25 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
 ) {
   const { email, password } = req.body;
   // find user
-  const [rows, fields] = await MySQL.query(
-    `SELECT * FROM users WHERE email = '${email}'`
-  );
-  if (rows.length > 0) {
-    const match = await bcrypt.compare(password, rows[0].password);
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+  if (user) {
+    const match = await bcrypt.compare(password, user.password);
     if (match) {
-      const { id } = rows[0];
-      const [result, _] = await MySQL.query(
-        `SELECT * FROM user_roles WHERE user_id = ${id};`
-      );
-      const roles = result.map((obj: any) => obj.role);
+      const { id } = user;
+      const roles = await prisma.userRole.findMany({
+        where: {
+          userId: id
+        }
+      })
+      const _roles = roles.map((obj: any) => obj.role);
       const token = await JWTSignToken({
-        name: rows[0].name,
+        name: user.name,
         email,
-        roles,
+        roles: _roles,
         id,
       });
       res.status(200).json({ token });
@@ -136,20 +141,29 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
 ) {
   const { name, email, password } = req.body;
   const hashedPassword = await bcryptHashPassword(password);
-  const [users, usersFields] = await MySQL.query(
-    `SELECT * FROM users WHERE email = '${email}'`
-  );
-  if (users.length > 0) {
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+  if (user) {
     res.status(409).json({error: "Email already exists. Please choose a different email."})
   } else {
-    const query = await MySQL.query(
-      `INSERT INTO users (name, email, password) VALUES ('${name}', '${email}', '${hashedPassword}')`
-    );
-    const { insertId } = query[0];
+    const result = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+      }
+    });
+    const { id } = result;
     // create roles here in database
-    await MySQL.query(
-      `INSERT INTO user_roles (user_id, role) VALUES (${insertId}, 'user');`
-    );
+    await prisma.userRole.create({
+      data: {
+        userId: id,
+        role: "user"
+      }
+    })
     res.status(201).end()
   }
 };
