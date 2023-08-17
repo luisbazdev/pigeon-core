@@ -84,22 +84,6 @@ export interface ISettings {
       };
     };
   };
-  db: {
-    mysql: {
-      enabled: string;
-      host: string;
-      user: string;
-      password: string;
-      database: string;
-      port: string;
-    };
-    mongodb: {
-      enabled: string;
-      url: string;
-      db: string;
-      collection: string;
-    };
-  };
   port: string;
 }
 export type AuthType = "none" | "jwt" | "basic";

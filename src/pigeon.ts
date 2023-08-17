@@ -49,22 +49,6 @@ export let Pigeon: IPigeon = {
         },
       },
     },
-    db: {
-      mysql: {
-        enabled: "false",
-        host: "host",
-        user: "user",
-        password: "password",
-        database: "database",
-        port: "3306",
-      },
-      mongodb: {
-        enabled: "false",
-        url: "url",
-        db: "db",
-        collection: "collection",
-      },
-    },
     port: "2020",
   },
   listen: function (port: string, callback: any) {
