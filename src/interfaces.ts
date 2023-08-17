@@ -124,3 +124,9 @@ export interface JWTLogInCredentials {
 export interface JWTSignUpCredentials extends JWTLogInCredentials {
   name: string;
 }
+export interface IRequestUser {
+  id?: number,
+  name?: string,
+  email?: string,
+  roles?: string[]
+}

@@ -1,4 +1,5 @@
 import { IncomingMessage } from "node:http";
+import { IRequestUser } from "./interfaces";
 
 declare module "http" {
   interface IncomingMessage {
@@ -7,7 +8,7 @@ declare module "http" {
     cookies: any;
     query: any;
     params: any;
-    user: any;
+    user: IRequestUser;
   }
 }
 
