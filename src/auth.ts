@@ -13,7 +13,10 @@ import { PrismaClient } from "@prisma/client";
 import { isValidEmail, isValidName, isValidPassword } from "./util";
 
 const prisma = new PrismaClient();
-
+/**
+ * This function determines which type of authentication to set in
+ * the API based on Pigeon settings.
+ */
 export const authenticate: any = function () {
   if (Pigeon.settings.auth.type === "none") return;
   switch (Pigeon.settings.auth.type) {
@@ -21,6 +24,9 @@ export const authenticate: any = function () {
       return basicHTTPAuthentication;
     }
     case "jwt": {
+      // Only add JWTAuthentication globally if the condition
+      // below satisfies, else let the programmer manually
+      // add JWTAuthentication to handlers and routes.
       if (Pigeon.settings.auth.jwt.global === "true") {
         return JWTAuthentication;
       }
@@ -29,24 +35,32 @@ export const authenticate: any = function () {
       return;
   }
 };
+/**
+ * Middleware function to authenticate request based on HTTP Basic Authentication.
+ * @param {IncomingMessage} request - The incoming request object.
+ * @param {ServerResponse} response - The server response object.
+ * @param {Function} next - The next function to pass control to.
+ */
 export const basicHTTPAuthentication: IMiddlewareFunction = function (
-  req: IncomingMessage,
-  res: ServerResponse,
+  request: IncomingMessage,
+  response: ServerResponse,
   next: Function
 ) {
-  if (!req.get("authorization")) {
-    return res
+  // If there is no 'Authorization' header present
+  if (!request.get("authorization")) {
+    return response
       .status(401)
       .set("WWW-Authenticate", "Basic")
       .end("Not Authenticated");
   } else {
+    // Decode base64 credentials and store them in
+    // username and password variables, respectively
     const credentials = Buffer.from(
-      req.get("authorization").split(" ")[1],
+      request.get("authorization").split(" ")[1],
       "base64"
     )
       .toString()
       .split(":");
-
     const username = credentials[0];
     const password = credentials[1];
     if (
@@ -55,7 +69,7 @@ export const basicHTTPAuthentication: IMiddlewareFunction = function (
         Pigeon.settings.auth.basic.password === password
       )
     ) {
-      return res.status(401).set("WWW-Authenticate", "Basic").json({
+      return response.status(401).set("WWW-Authenticate", "Basic").json({
         error:
           "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again.",
       });
@@ -63,12 +77,20 @@ export const basicHTTPAuthentication: IMiddlewareFunction = function (
   }
   next();
 };
+/**
+ * Middleware function to authenticate request based on JWT Authentication.
+ * @param {IncomingMessage} request - The incoming request object.
+ * @param {ServerResponse} response - The server response object.
+ * @param {Function} next - The next function to pass control to.
+ */
 export const JWTAuthentication: IMiddlewareFunction = async function (
-  req: IncomingMessage,
-  res: ServerResponse,
+  request: IncomingMessage,
+  response: ServerResponse,
   next: Function
 ) {
-  const { url } = req;
+  const { url } = request;
+  // If JWT routes are enabled and the request is sent to one of those
+  // routes, then skip this middleware!
   if (
     Pigeon.settings.auth.jwt.routes.enabled === "true" &&
     (url == "/api/auth" + Pigeon.settings.auth.jwt.routes.login ||
@@ -76,52 +98,62 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
       url == "/api/auth" + Pigeon.settings.auth.jwt.routes.logout)
   )
     return next();
-  if (!req.get("authorization")) {
-    return res.status(401).json({
+  // If JWT token was not sent
+  if (!request.get("authorization")) {
+    return response.status(401).json({
       error:
         "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again.",
     });
   } else {
-    const authorization = req.get("authorization")?.split(" ");
+    const authorization = request.get("authorization")?.split(" ");
     const type = authorization?.[0];
     if (type != "Bearer")
-      res.status(401).json({
+      response.status(401).json({
         error:
           "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again.",
       });
     const token = authorization?.[1];
+    // Verify the JWT token
     const valid = await JWTVerifyToken(token);
     if (!valid) {
-      return res.status(401).json({
+      return response.status(401).json({
         error:
           "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again.",
       });
     }
+    // If token is valid, set the user object of the request object
     const user = {
       name: valid.name,
       email: valid.email,
       roles: valid.roles,
       id: valid.id,
     };
-    req.user = user;
+    request.user = user;
   }
   next();
 };
-// give a JWT token to the user
+/**
+ * Callback function for JWT Authentication login route.
+ * @param {IncomingMessage} request - The incoming request object.
+ * @param {ServerResponse} response - The server response object.
+ */
 export const JWTAuthenticationLogIn: IHandlerFuction = async function (
-  req: IncomingMessage,
-  res: ServerResponse
+  request: IncomingMessage,
+  response: ServerResponse
 ) {
-  const { email, password } = req.body;
-  // find user
+  const { email, password } = request.body;
+  // Try to find a user record with the provided email address
   const user = await prisma.user.findUnique({
     where: {
       email,
     },
   });
+  // If user is found
   if (user) {
     const match = await bcrypt.compare(password, user.password);
     if (match) {
+      // If the provided password and the user password match,
+      // query the user roles
       const { id } = user;
       const roles = await prisma.userRole.findMany({
         where: {
@@ -129,54 +161,66 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
         },
       });
       const _roles = roles.map((obj: any) => obj.role);
+      // Return a signed JWT token containing the name, email, id
+      // and roles of the user
       const token = await JWTSignToken({
         name: user.name,
         email,
         roles: _roles,
         id,
       });
-      res.status(200).json({ token });
+      response.status(200).json({ token });
     } else {
-      res.status(401).json({
+      response.status(401).json({
         error: "Invalid credentials. Please check your username and password.",
       });
     }
   } else {
-    res
+    response
       .status(404)
       .json({ error: "User not found. Please check the email you provided." });
   }
 };
+/**
+ * Callback function for JWT Authentication sign-up route.
+ * @param {IncomingMessage} request - The incoming request object.
+ * @param {ServerResponse} response - The server response object.
+ */
 export const JWTAuthenticationSignUp: IHandlerFuction = async function (
-  req: IncomingMessage,
-  res: ServerResponse
+  request: IncomingMessage,
+  response: ServerResponse
 ) {
-  const { name, email, password } = req.body;
+  const { name, email, password } = request.body;
+  // Verify name, email and password provided by the user
   if (!isValidName)
-    return res.status(400).json({
+    return response.status(400).json({
       error:
         "Invalid username. Please provide a username between 2 and 6 characters long, containing only alphanumeric characters.",
     });
   if (!isValidEmail)
-    return res.status(400).json({
+    return response.status(400).json({
       error: "Invalid email address. Please provide a valid email address.",
     });
   if (!isValidPassword)
-    return res.status(400).json({
+    return response.status(400).json({
       error:
         "Weak password. Please provide a password with a minimum length of 8 characters, at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol.",
     });
-  const hashedPassword = await bcryptHashPassword(password);
+  // If everything is valid, see if user record with the same
+  // email address already exists
   const user = await prisma.user.findUnique({
     where: {
       email,
     },
   });
   if (user) {
-    res.status(409).json({
+    response.status(409).json({
       error: "Email already exists. Please choose a different email.",
     });
   } else {
+    // If user does not exist, hash the provided password
+    // and create a new user record!
+    const hashedPassword = await bcryptHashPassword(password);
     const result = await prisma.user.create({
       data: {
         name,
@@ -185,16 +229,21 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
       },
     });
     const { id } = result;
-    // create roles here in database
+    // Also create the "user" role for every new user
     await prisma.userRole.create({
       data: {
         userId: id,
         role: "user",
       },
     });
-    res.status(201).end();
+    response.status(201).end();
   }
 };
+/**
+ * Callback function for JWT Authentication log-out route.
+ * @param {IncomingMessage} request - The incoming request object.
+ * @param {ServerResponse} response - The server response object.
+ */
 export const JWTAuthenticationLogOut: IHandlerFuction = function (
   req: IncomingMessage,
   res: ServerResponse
@@ -217,7 +266,6 @@ export const JWTVerifyToken = async function (token: IToken) {
     return null;
   }
 };
-
 export const JWTSignToken = async function (payload: ITokenPayload) {
   try {
     const asyncToken = await jwt.sign(

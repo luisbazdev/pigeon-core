@@ -14,11 +14,9 @@ export interface IPigeon {
   handle: (req: IncomingMessage, res: ServerResponse) => any;
   addHandler: (handler: any) => void;
   createHandler: (path: string, middleware?: IMiddlewareFunction[]) => IPigeonHandler;
-  addRepository: (name: string, repository: IRepository) => void;
   addMiddleware: (middleware: any) => void;
   auth: (type: AuthType, settings?: JWTSettings | HTTPBasicSettings) => void;
   port: (port: string | number) => void;
-  initialize: () => void;
   start: () => void;
 }
 export interface IToken {

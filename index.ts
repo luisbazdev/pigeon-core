@@ -1,3 +1,4 @@
+// Add custom method to request and response objects
 import "./src/request";
 import "./src/response";
 

@@ -1,12 +1,18 @@
 import { IncomingMessage, ServerResponse } from "node:http";
 import { IMiddlewareFunction } from "../interfaces";
-
+/**
+ * Middleware function that adds body object to request object.
+ * @param {IncomingMessage} request - The incoming request object.
+ * @param {ServerResponse} response - The server response object.
+ * @param {Function} next - The next function to pass control to.
+ */
 export const bodyMiddleware: IMiddlewareFunction = function (
-  req: IncomingMessage,
-  res: ServerResponse,
+  request: IncomingMessage,
+  response: ServerResponse,
   next: Function
 ) {
-  let { method, headers } = req;
+  let { method, headers } = request;
+  // If request method is not appropiate then do not add body!
   if (
     method === "GET" ||
     method === "HEAD" ||
@@ -18,23 +24,28 @@ export const bodyMiddleware: IMiddlewareFunction = function (
   if (headers["content-type"] !== "application/json") return next();
   let body = "";
 
-  req.on("data", (chunk: any) => {
+  request.on("data", (chunk: any) => {
     body += chunk.toString();
   });
-  req.on("end", () => {
-    req.body = JSON.parse(body);
+  request.on("end", () => {
+    request.body = JSON.parse(body);
     return next();
   });
 };
-
+/**
+ * Middleware function that adds cookie object to request object.
+ * @param {IncomingMessage} request - The incoming request object.
+ * @param {ServerResponse} response - The server response object.
+ * @param {Function} next - The next function to pass control to.
+ */
 export const cookiesMiddleware: IMiddlewareFunction = function (
-  req: IncomingMessage,
-  res: ServerResponse,
+  request: IncomingMessage,
+  response: ServerResponse,
   next: Function
 ) {
-  const cookiesString = req.headers.cookie || "";
+  const cookiesString = request.headers.cookie || "";
   const cookiesArray = cookiesString.split(";");
-  req.cookies = cookiesArray.reduce((cookiesObj: any, cookie: any) => {
+  request.cookies = cookiesArray.reduce((cookiesObj: any, cookie: any) => {
     const [key, value] = cookie.trim().split("=");
     cookiesObj[key] = value;
     return cookiesObj;
