@@ -1,3 +1,4 @@
+import validator from "validator";
 import {
   JWTAuthenticationLogIn,
   JWTAuthenticationSignUp,
@@ -65,7 +66,7 @@ const isCharacterRepeated = function (string: string, character: string) {
 
 export const isHandlerPathValid = function (handlerPath: string) {
   return (
-    handlerPath != "/auth" && 
+    handlerPath != "/auth" &&
     onlyAllowedHandlerCharacters.test(handlerPath) &&
     handlerPath != "/api" &&
     handlerPath != "/" &&
@@ -131,4 +132,18 @@ export const getContentType = function (path: string) {
     default:
       return "text/html";
   }
+};
+
+export const isValidName = function (name: string) {
+  return (
+    !validator.isEmpty(name) &&
+    validator.isAlpha(name, undefined, { ignore: " " }) &&
+    validator.isLength(name, { min: 2, max: 25 })
+  );
+};
+export const isValidEmail = function (email: string) {
+  return !validator.isEmpty(email) && validator.isEmail(email);
+};
+export const isValidPassword = function (password: string) {
+  return !validator.isEmpty(password) && validator.isStrongPassword(password);
 };

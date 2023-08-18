@@ -9,7 +9,8 @@ import {
   IToken,
   ITokenPayload,
 } from "./interfaces";
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
+import { isValidEmail, isValidName, isValidPassword } from "./util";
 
 const prisma = new PrismaClient();
 
@@ -54,10 +55,10 @@ export const basicHTTPAuthentication: IMiddlewareFunction = function (
         Pigeon.settings.auth.basic.password === password
       )
     ) {
-      return res
-        .status(401)
-        .set("WWW-Authenticate", "Basic")
-        .json({error: "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again."});
+      return res.status(401).set("WWW-Authenticate", "Basic").json({
+        error:
+          "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again.",
+      });
     }
   }
   next();
@@ -76,18 +77,25 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
   )
     return next();
   if (!req.get("authorization")) {
-    return res
-      .status(401)
-      .json({error: "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again."});
+    return res.status(401).json({
+      error:
+        "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again.",
+    });
   } else {
     const authorization = req.get("authorization")?.split(" ");
     const type = authorization?.[0];
     if (type != "Bearer")
-      res.status(401).json({error: "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again."});
+      res.status(401).json({
+        error:
+          "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again.",
+      });
     const token = authorization?.[1];
     const valid = await JWTVerifyToken(token);
     if (!valid) {
-      return res.status(401).json({error: "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again."});
+      return res.status(401).json({
+        error:
+          "Unauthorized: Access is denied due to invalid credentials. Please check your authentication details and try again.",
+      });
     }
     const user = {
       name: valid.name,
@@ -117,9 +125,9 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
       const { id } = user;
       const roles = await prisma.userRole.findMany({
         where: {
-          userId: id
-        }
-      })
+          userId: id,
+        },
+      });
       const _roles = roles.map((obj: any) => obj.role);
       const token = await JWTSignToken({
         name: user.name,
@@ -129,10 +137,14 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
       });
       res.status(200).json({ token });
     } else {
-      res.status(401).json({error: "Invalid credentials. Please check your username and password."});
+      res.status(401).json({
+        error: "Invalid credentials. Please check your username and password.",
+      });
     }
   } else {
-    res.status(404).json({error: "User not found. Please check the email you provided."})
+    res
+      .status(404)
+      .json({ error: "User not found. Please check the email you provided." });
   }
 };
 export const JWTAuthenticationSignUp: IHandlerFuction = async function (
@@ -140,6 +152,20 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
   res: ServerResponse
 ) {
   const { name, email, password } = req.body;
+  if (!isValidName)
+    return res.status(400).json({
+      error:
+        "Invalid username. Please provide a username between 2 and 6 characters long, containing only alphanumeric characters.",
+    });
+  if (!isValidEmail)
+    return res.status(400).json({
+      error: "Invalid email address. Please provide a valid email address.",
+    });
+  if (!isValidPassword)
+    return res.status(400).json({
+      error:
+        "Weak password. Please provide a password with a minimum length of 8 characters, at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol.",
+    });
   const hashedPassword = await bcryptHashPassword(password);
   const user = await prisma.user.findUnique({
     where: {
@@ -147,24 +173,26 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
     },
   });
   if (user) {
-    res.status(409).json({error: "Email already exists. Please choose a different email."})
+    res.status(409).json({
+      error: "Email already exists. Please choose a different email.",
+    });
   } else {
     const result = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-      }
+      },
     });
     const { id } = result;
     // create roles here in database
     await prisma.userRole.create({
       data: {
         userId: id,
-        role: "user"
-      }
-    })
-    res.status(201).end()
+        role: "user",
+      },
+    });
+    res.status(201).end();
   }
 };
 export const JWTAuthenticationLogOut: IHandlerFuction = function (
@@ -178,7 +206,7 @@ export const JWTAuthenticationLogOut: IHandlerFuction = function (
   const token = authorization?.[1];
   const valid = JWTVerifyToken(token);
   //if(!valid) ...
-  res.status(200).end()
+  res.status(200).end();
   // check if jtw is valid, if it is, remove it from the client
 };
 export const JWTVerifyToken = async function (token: IToken) {
