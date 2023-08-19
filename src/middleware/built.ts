@@ -21,6 +21,7 @@ export const bodyMiddleware: IMiddlewareFunction = function (
     method === "TRACE"
   )
     return next();
+  // Only JSON body
   if (headers["content-type"] !== "application/json") return next();
   let body = "";
 
@@ -28,7 +29,16 @@ export const bodyMiddleware: IMiddlewareFunction = function (
     body += chunk.toString();
   });
   request.on("end", () => {
-    request.body = JSON.parse(body);
+    try {
+      request.body = JSON.parse(body);
+    } catch (error) {
+      return response
+        .status(400)
+        .json({
+          error:
+            "The JSON body provided in the request is not valid. Please ensure that the JSON syntax is correct.",
+        });
+    }
     return next();
   });
 };
