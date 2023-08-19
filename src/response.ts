@@ -1,6 +1,9 @@
 import { ServerResponse } from "node:http";
 import { readFile } from "node:fs";
 import { getContentType } from "./util";
+const path = require('path');
+
+const staticFolder = path.join(__dirname, '..', '..', '..', '..', 'src', 'static');
 
 declare module "http" {
   interface ServerResponse {
@@ -16,12 +19,11 @@ declare module "http" {
 }
 
 ServerResponse.prototype.download = function (filePath: string) {
-  this.set("Content-Disposition", "attachment; filename=" + filePath);
-  readFile(
-    `${__dirname}../../../static/${filePath}`,
+  readFile(path.join(staticFolder, filePath),
     (error: any, data: any) => {
       if (error) throw error;
-      this.end();
+      this.set("Content-Disposition", "attachment; filename=" + filePath);
+      this.end(data);
     }
   );
 };
