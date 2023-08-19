@@ -44,8 +44,7 @@ ServerResponse.prototype.send = function (value: any) {
 };
 
 ServerResponse.prototype.sendFile = function (filePath: string) {
-  readFile(
-    `${__dirname}../../../static/${filePath}`,
+  readFile(path.join(staticFolder, filePath),
     (error: any, data: any) => {
       if (error) throw error;
       this.setHeader("Content-Type", getContentType(filePath));
