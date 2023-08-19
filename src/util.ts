@@ -28,12 +28,6 @@ export const createAuthRoutes = function () {
         method: "POST",
         middlewares: [],
       },
-      {
-        route: Pigeon.settings.auth.jwt.routes.logout,
-        callback: JWTAuthenticationLogOut,
-        method: "POST",
-        middlewares: [],
-      },
     ],
     middlewares: [],
   };

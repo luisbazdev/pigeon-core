@@ -94,8 +94,7 @@ export const JWTAuthentication: IMiddlewareFunction = async function (
   if (
     Pigeon.settings.auth.jwt.routes.enabled === "true" &&
     (url == "/api/auth" + Pigeon.settings.auth.jwt.routes.login ||
-      url == "/api/auth" + Pigeon.settings.auth.jwt.routes.signup ||
-      url == "/api/auth" + Pigeon.settings.auth.jwt.routes.logout)
+      url == "/api/auth" + Pigeon.settings.auth.jwt.routes.signup)
   )
     return next();
   // If JWT token was not sent
