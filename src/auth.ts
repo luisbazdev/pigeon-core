@@ -141,44 +141,50 @@ export const JWTAuthenticationLogIn: IHandlerFuction = async function (
   request: IncomingMessage,
   response: ServerResponse
 ) {
-  const { email, password } = request.body;
-  // Try to find a user record with the provided email address
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
-  // If user is found
-  if (user) {
-    const match = await bcrypt.compare(password, user.password);
-    if (match) {
-      // If the provided password and the user password match,
-      // query the user roles
-      const { id } = user;
-      const roles = await prisma.userRole.findMany({
-        where: {
-          userId: id,
-        },
-      });
-      const _roles = roles.map((obj: any) => obj.role);
-      // Return a signed JWT token containing the name, email, id
-      // and roles of the user
-      const token = await JWTSignToken({
-        name: user.name,
+  try {
+    const { email, password } = request.body;
+    // Try to find a user record with the provided email address
+    const user = await prisma.user.findUnique({
+      where: {
         email,
-        roles: _roles,
-        id,
-      });
-      response.status(200).json({ token });
-    } else {
-      response.status(401).json({
+      },
+    });
+    // If user is found
+    if (user) {
+      const match = await bcrypt.compare(password, user.password);
+      if (match) {
+        // If the provided password and the user password match,
+        // query the user roles
+        const { id } = user;
+        const roles = await prisma.userRole.findMany({
+          where: {
+            userId: id,
+          },
+        });
+        const _roles = roles.map((obj: any) => obj.role);
+        // Return a signed JWT token containing the name, email, id
+        // and roles of the user
+        const token = await JWTSignToken({
+          name: user.name,
+          email,
+          roles: _roles,
+          id,
+        });
+        return response.status(200).json({ token });
+      }
+      return response.status(401).json({
         error: "Invalid credentials. Please check your username and password.",
       });
     }
-  } else {
-    response
+    return response
       .status(404)
       .json({ error: "User not found. Please check the email you provided." });
+  } catch (error) {
+    return response
+      .status(400)
+      .json({ error: "An unexpected error occurred." });
+  } finally {
+    await prisma.$disconnect();
   }
 };
 /**
@@ -190,53 +196,61 @@ export const JWTAuthenticationSignUp: IHandlerFuction = async function (
   request: IncomingMessage,
   response: ServerResponse
 ) {
-  const { name, email, password } = request.body;
-  // Verify name, email and password provided by the user
-  if (!isValidName)
-    return response.status(400).json({
-      error:
-        "Invalid username. Please provide a username between 2 and 6 characters long, containing only alphanumeric characters.",
-    });
-  if (!isValidEmail)
-    return response.status(400).json({
-      error: "Invalid email address. Please provide a valid email address.",
-    });
-  if (!isValidPassword)
-    return response.status(400).json({
-      error:
-        "Weak password. Please provide a password with a minimum length of 8 characters, at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol.",
-    });
-  // If everything is valid, see if user record with the same
-  // email address already exists
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
-  if (user) {
-    response.status(409).json({
-      error: "Email already exists. Please choose a different email.",
-    });
-  } else {
-    // If user does not exist, hash the provided password
-    // and create a new user record!
-    const hashedPassword = await bcryptHashPassword(password);
-    const result = await prisma.user.create({
-      data: {
-        name,
+  try {
+    const { name, email, password } = request.body;
+    // Verify name, email and password provided by the user
+    if (!isValidName(name))
+      return response.status(400).json({
+        error:
+          "Invalid username. Please provide a username between 2 and 6 characters long, containing only alphanumeric characters.",
+      });
+    if (!isValidEmail(email))
+      return response.status(400).json({
+        error: "Invalid email address. Please provide a valid email address.",
+      });
+    if (!isValidPassword(password))
+      return response.status(400).json({
+        error:
+          "Weak password. Please provide a password with a minimum length of 8 characters, at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol.",
+      });
+    // If everything is valid, see if user record with the same
+    // email address already exists
+    const user = await prisma.user.findUnique({
+      where: {
         email,
-        password: hashedPassword,
       },
     });
-    const { id } = result;
-    // Also create the "user" role for every new user
-    await prisma.userRole.create({
-      data: {
-        userId: id,
-        role: "user",
-      },
-    });
-    response.status(201).end();
+    if (user) {
+      response.status(409).json({
+        error: "Email already exists. Please choose a different email.",
+      });
+    } else {
+      // If user does not exist, hash the provided password
+      // and create a new user record!
+      const hashedPassword = await bcryptHashPassword(password);
+      const result = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+        },
+      });
+      const { id } = result;
+      // Also create the "user" role for every new user
+      await prisma.userRole.create({
+        data: {
+          userId: id,
+          role: "user",
+        },
+      });
+      response.status(201).end();
+    }
+  } catch (error) {
+    return response
+      .status(400)
+      .json({ error: "An unexpected error occurred." });
+  } finally {
+    await prisma.$disconnect();
   }
 };
 /**
