@@ -9,12 +9,12 @@ declare module "http" {
   interface ServerResponse {
     download: (filePath: string) => void;
     redirect: (to: string) => void;
-    set: (header: string, value: string) => void;
+    set: (header: string, value: string) => this;
     send: (value: any) => void;
     sendFile: (filePath: string) => void;
     json: (val: any) => void;
-    status: (status: number) => any;
-    cookie: (name: string, value: string, options: any) => void;
+    status: (status: number) => this;
+    cookie: (name: string, value: string, options: any) => this;
   }
 }
 
